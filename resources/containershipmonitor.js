@@ -6,7 +6,7 @@
 (function() {
 
 
-var appCommand = angular.module('containershipmonitor', ['googlechart', 'ui.bootstrap', 'ngSanitize']);
+var appCommand = angular.module('containershipmonitor', ['googlechart', 'ui.bootstrap', 'ngSanitize','ngModal']);
 
 
 
@@ -25,6 +25,8 @@ appCommand.controller('ContainerShipControler',
 
 	this.showconnection=true;
 	this.showinformation=false;
+	
+	this.isConnected=false;
 	
 	this.isshowhistory=false;
 	this.showhistory = function( showhistory ) {
@@ -60,7 +62,7 @@ appCommand.controller('ContainerShipControler',
 			self.platforminfo 		= jsonResult.data.platforminfo;
 			self.listtenants 		= jsonResult.data.listtenants;
 			self.connectionlisteventshtml = jsonResult.data.listeventshtml;
-
+			self.isConnected=true;
 	
 		}, function (jsonResult) {
 			this.connectionmessage="";
@@ -72,7 +74,7 @@ appCommand.controller('ContainerShipControler',
 
 	
 	this.getPlatformInformation = function () {
-		alert("getPlatformInformation: start");
+		// alert("getPlatformInformation: start");
 
 		var param = { "platformUsername": this.platformUsername,
 				  "platformPassword": this.platformPassword };
@@ -83,14 +85,14 @@ appCommand.controller('ContainerShipControler',
 		
 		$http.get( '?page=custompage_containership&action=getplatforminformation&jsonparam='+json )
 		      .then( function (jsonResult) {
-						alert("getPlatformInformation: success");
+						// alert("getPlatformInformation: success");
 						 /*self.platforminfo 		= response.data; */ 
 						self.listevents 		= jsonResult.data.listevents;
 						self.listeventshtml		= jsonResult.data.listeventshtml;
 		      		}, 
 		      		function (jsonResult) {
 		      			self.errormessage = "Error from server : "+jsonResult.status;
-		      			alert("getPlatformInformation:Error from server : "+jsonResult.status);
+		      			alert("Error from server : "+jsonResult.status);
 		      		} 
 		      		).finally(function() {
 		    			self.loading = false;
@@ -98,10 +100,14 @@ appCommand.controller('ContainerShipControler',
 		 
 	};
 	
+	
+	// ----------------------------- get list tenants 
 	this.getListTenants = function () 	{
 		var self = this;
 		this.message="Processing...";
 		this.errormessage="";
+		this.listeventshtml='';
+
 		var param = { "platformUsername": this.platformUsername,
 				  "platformPassword": this.platformPassword };
 		var json= angular.toJson(param, param);
@@ -110,11 +116,11 @@ appCommand.controller('ContainerShipControler',
 		$http.get( '?page=custompage_containership&action=getlisttenants&jsonparam='+json )
 		.then( function successCallback(response) {
 			self.message="";
-			self.listtenants = response.data;
+			self.listtenants = response.data.listtenants;
 		}, function errorCallback(response) {
 			self.message="";
 			self.errormessage = "Error from server : "+response.status;
-			alert("getListTenants:Error from server : "+response.status);
+			alert("Error from server : "+response.status);
 		} );
 	};
 	
@@ -123,6 +129,7 @@ appCommand.controller('ContainerShipControler',
 	 * refresh
 	 */
 	this.refresh = function() {
+		this.listeventshtml='';
 		this.getPlatformInformation();
 		this.getListTenants();
 	};
@@ -163,6 +170,32 @@ appCommand.controller('ContainerShipControler',
 	}
 	
 	
+	this.editTenant = function () {
+		var self = this;
+		this.message="Processing...";
+		this.errormessage="";
+		this.connectionlisteventshtml="";
+		
+		this.tenantinformation.platformUsername= this.platformUsername;
+		this.tenantinformation.platformPassword= this.platformPassword;
+		
+		var json= angular.toJson(this.tenantinformation, true);
+		
+		$http.get( '?page=custompage_containership&action=edittenant&jsonparam='+json  )
+		.then( function (jsonResult) {
+			self.message		= jsonResult.data.message;
+			self.listtenants 	= jsonResult.data.listtenants;
+			self.listeventshtml = jsonResult.data.listeventshtml;
+			
+		}, function (jsonResult) {
+			self.message="";
+			self.errormessage = "Error from server : "+jsonResult.status;
+			alert("Error from server : "+jsonResult.status);
+		} );
+	}
+	
+	
+	
 	
 
 	this.activatetenant = function ( tenant ) {
@@ -172,7 +205,7 @@ appCommand.controller('ContainerShipControler',
 		
 		var param = { "platformUsername": this.platformUsername,
 				  "platformPassword": this.platformPassword,
-				  "tenantId" : tenant.id };
+				  "id" : tenant.id };
 		var json= angular.toJson(param, param);
 		
 		$http.get( '?page=custompage_containership&action=activatetenant&jsonparam='+json )
@@ -195,7 +228,7 @@ appCommand.controller('ContainerShipControler',
 		this.errormessage="";
 		var param = { "platformUsername": this.platformUsername,
 				  "platformPassword": this.platformPassword,
-				  "tenantId" : tenant.id };
+				  "id" : tenant.id };
 		var json= angular.toJson(param, param);
 
 	
@@ -218,7 +251,7 @@ appCommand.controller('ContainerShipControler',
 
 		var param = { "platformUsername": this.platformUsername,
 				  "platformPassword": this.platformPassword,
-				  "tenantId" : tenant.id };
+				  "id" : tenant.id };
 		var json= angular.toJson(param, param);
 
 		$http.get( '?page=custompage_containership&action=removetenant&jsonparam='+json  )
@@ -236,6 +269,42 @@ appCommand.controller('ContainerShipControler',
 		return $sce.trustAsHtml(  listevents);
 	}
 	
+	
+	//  manage the modal 
+	
+	this.isshowTenantInformation=false;
+	this.isAddTenant = false;
+	this.openTenantInformation = function () {
+		this.listeventshtml=''; 
+		this.isshowTenantInformation=true;
+		
+		
+	}
+	this.closeTenantInformation = function () {
+		this.isshowTenantInformation=false;
+	}
+	this.openToAddTenantInformation = function()
+	{
+		this.isAddTenant = true;
+		this.isEditTenant = false;
+		this.openTenantInformation();
+	}
+	
+	this.openEditTenant = function( tenantinfo ) {
+		this.isAddTenant =false;
+		this.isEditTenant = true;
+		
+		this.tenantinformation = tenantinfo;
+	// alert("Tenant Status ["+ angular.toJson( tenantinfo ) +"]");
+		
+		if (tenantinfo.state=="ACTIVATED")
+			this.tenantinformation.tenantActivate=true;
+		else
+			this.tenantinformation.tenantActivate=false;
+		
+		
+		this.openTenantInformation();
+	}
 });
 
 

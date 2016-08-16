@@ -8,8 +8,10 @@
         <bonita.version>7.1.2</bonita.version>
     </properties>
 
+    
 
     <dependencies>
+      
         <dependency>
             <groupId>org.bonitasoft.engine</groupId>
             <artifactId>bonita-client</artifactId>

@@ -19,9 +19,12 @@ import org.bonitasoft.engine.exception.CreationException;
 import org.bonitasoft.engine.exception.DeletionException;
 import org.bonitasoft.engine.exception.ServerAPIException;
 import org.bonitasoft.engine.exception.UnknownAPITypeException;
+import org.bonitasoft.engine.exception.UpdateException;
 import org.bonitasoft.engine.home.BonitaHome;
 import org.bonitasoft.engine.platform.InvalidPlatformCredentialsException;
 import org.bonitasoft.engine.platform.PlatformLoginException;
+import org.bonitasoft.engine.platform.PlatformNotFoundException;
+import org.bonitasoft.engine.session.APISession;
 import org.bonitasoft.engine.session.PlatformSession;
 import org.bonitasoft.engine.util.APITypeManager;
 import org.bonitasoft.log.event.BEvent;
@@ -36,6 +39,7 @@ import com.bonitasoft.engine.platform.TenantCreator;
 import com.bonitasoft.engine.platform.TenantCriterion;
 import com.bonitasoft.engine.platform.TenantDeactivationException;
 import com.bonitasoft.engine.platform.TenantNotFoundException;
+import com.bonitasoft.engine.platform.TenantUpdater;
 
 public class ContainerShipAccess {
 
@@ -84,19 +88,26 @@ public class ContainerShipAccess {
             "No BonitaHome", "The variable BonitaHome can't be accessed",
             "The environmenent variable BONITA_HOME define the directory where the server install the ");
 
+    private static BEvent EventTenantUpdate = new BEvent(ContainerShipAccess.class.getName(), 15, Level.ERROR,
+            "No BonitaHome", "The variable BonitaHome can't be accessed",
+            "The environmenent variable BONITA_HOME define the directory where the server install the ");
+
+    private static BEvent EventTenantEditMissingParameter = new BEvent(ContainerShipAccess.class.getName(), 16, Level.APPLICATIONERROR,
+            "Missing parameter to edit the tenant", "A set of minimal parameters has to be give to edit the tenant");
+
     private static final String cstParamServerUrl = "serverurl";
     private static final String cstParamApplicationName = "applicationname";
     private static final String cstParamPlatformUserName = "platformUsername";
     private static final String cstParamPlatformPassword = "platformPassword";
 
-    private static final String cstParamTenantName = "tenantName";
-    private static final String cstParamTenantDescription = "tenantDescription";
-    private static final String cstParamTenantIconName = "tenanticonname";
-    private static final String cstParamTenantIconPath = "tenanticonpath";
+    private static final String cstParamTenantName = "name";
+    private static final String cstParamTenantDescription = "description";
+    private static final String cstParamTenantIconName = "conname";
+    private static final String cstParamTenantIconPath = "iconpath";
     private static final String cstParamTenantUserName = "tenantUsername";
     private static final String cstParamTenantPassword = "tenantPassword";
     private static final String cstParamTenantActivate = "tenantActivate";
-    private static final String cstParamTenantId = "tenantId";
+    private static final String cstParamTenantId = "id";
 
     public static class TenantParameters {
 
@@ -120,13 +131,16 @@ public class ContainerShipAccess {
         public boolean refreshListTenant = true;
 
         boolean isExternalCall = false;
+        public APISession apiSession = null;
 
         Long tenantId;
 
-        public static TenantParameters getInstance(final String jsonSt)
+        public static TenantParameters getInstance(final String jsonSt, final APISession apiSession)
         {
+
             logger.info("platform: JsonSt[" + jsonSt + "]");
             final TenantParameters tenantParameters = new TenantParameters();
+            tenantParameters.apiSession = apiSession;
             if (jsonSt == null) {
                 return tenantParameters;
             }
@@ -169,9 +183,11 @@ public class ContainerShipAccess {
         List<Tenant> listTenants = new ArrayList<Tenant>();
         Map<String, String> platformInfo = null;
 
+
         public Map<String, Object> getAnswer()
         {
             final Map<String, Object> answer = new HashMap<String, Object>();
+            logger.info("TenantResult.getAnswer: tenantId=" + tenantId);
             final List<Map<String, Object>> listResultTenants = new ArrayList<Map<String, Object>>();
             if (listTenants != null)
              {
@@ -183,6 +199,12 @@ public class ContainerShipAccess {
                     oneTenant.put("description", tenant.getDescription());
                     oneTenant.put("state", tenant.getState().toString());
                     oneTenant.put("creationdate", tenant.getCreationDate().getTime());
+                    if (tenantId != null && tenant.getId() == tenantId) {
+                        oneTenant.put("isCurrent", Boolean.TRUE);
+                    } else {
+                        oneTenant.put("isCurrent", Boolean.FALSE);
+                    }
+
                 }
                 // sort by name
             }
@@ -210,6 +232,7 @@ public class ContainerShipAccess {
         {
             listEvents.addAll(tenantResultToAdd.listEvents);
             listTenants.addAll(tenantResultToAdd.listTenants);
+            tenantId = tenantResultToAdd.tenantId;
         }
         @Override
         public String toString() {
@@ -262,6 +285,12 @@ public class ContainerShipAccess {
             }
 
             tenantResult.listTenants = platformAPI.getTenants(0, 10000, TenantCriterion.NAME_ASC);
+            logger.info("ApiSession ?" + tenantParameters.apiSession + " TenantId="
+                    + (tenantParameters.apiSession == null ? "<undefine" : tenantParameters.apiSession.getTenantId()));
+
+            if (tenantParameters.apiSession != null) {
+                tenantResult.tenantId = tenantParameters.apiSession.getTenantId();
+            }
 
         } catch (final PlatformLoginException le)
         {
@@ -369,13 +398,18 @@ public class ContainerShipAccess {
                 errorParameters += "No Tenant Password;";
             }
 
-            String bonitaHome = System.getProperty(BonitaHome.BONITA_HOME);
-            if (bonitaHome == null) {
-                bonitaHome = tenantParameters.defaultBonitaHome;
-            }
-            if (bonitaHome == null) {
-                errorParameters += "Can't access BONITA_HOME;";
-                tenantResult.listEvents.add(EventNoBonitaHome);
+            // BonitaHome : only before 7.3
+            String bonitaHome = null;
+            if (isBonitaHome(platformAPI))
+            {
+                bonitaHome = System.getProperty(BonitaHome.BONITA_HOME);
+                if (bonitaHome == null) {
+                    bonitaHome = tenantParameters.defaultBonitaHome;
+                }
+                if (bonitaHome == null) {
+                    errorParameters += "Can't access BONITA_HOME;";
+                    tenantResult.listEvents.add(EventNoBonitaHome);
+                }
             }
 
             if (errorParameters.length() > 0)
@@ -399,14 +433,17 @@ public class ContainerShipAccess {
             copyFolderParameters.reportOnlyError = true;
             copyFolderParameters.destinationFolderMustExist = false;// client does not exist
 
-            tenantResult.listEvents.addAll(ToolboxFile.copyFolder(bonitaHome + "/client/platform/tenant-template",
-                    bonitaHome + "/client/tenants/" + tenantResult.tenantId,
-                    copyFolderParameters));
+            if (bonitaHome != null)
+            {
+                tenantResult.listEvents.addAll(ToolboxFile.copyFolder(bonitaHome + "/client/platform/tenant-template",
+                        bonitaHome + "/client/tenants/" + tenantResult.tenantId,
+                        copyFolderParameters));
 
-            copyFolderParameters.destinationFolderMustExist = true;// server exist
-            tenantResult.listEvents.addAll(ToolboxFile.copyFolder(bonitaHome + "/engine-server/conf/tenants/template",
-                    bonitaHome + "/engine-server/conf/tenants/" + tenantResult.tenantId,
-                    copyFolderParameters));
+                copyFolderParameters.destinationFolderMustExist = true;// server exist
+                tenantResult.listEvents.addAll(ToolboxFile.copyFolder(bonitaHome + "/engine-server/conf/tenants/template",
+                        bonitaHome + "/engine-server/conf/tenants/" + tenantResult.tenantId,
+                        copyFolderParameters));
+            }
 
             // now activate the tenant
             if (tenantParameters.tenantActivate) {
@@ -421,9 +458,6 @@ public class ContainerShipAccess {
             {
                 tenantResult.addResult(getListTenants(tenantParameters));
             }
-
-
-
         } catch (final PlatformLoginException le)
         {
             logger.severe("Can't connect with user [" + tenantParameters.platformUsername + "]");
@@ -458,6 +492,118 @@ public class ContainerShipAccess {
 
     }
 
+    public static TenantResult editTenant(final TenantParameters tenantParameters)
+    {
+        logBeginOperation("editTenant", "", tenantParameters);
+        String logDetails = "";
+        // connection
+        final TenantResult tenantResult = new TenantResult();
+        try
+        {
+            final PlatformAPI platformAPI = getPlatformAPI(tenantParameters);
+
+            if (platformAPI == null) {
+                EventTenantAdminNotAvailable.log();
+                tenantResult.listEvents.add(EventTenantAdminNotAvailable);
+                return tenantResult;
+            }
+
+            logDetails += "tenantName[" + tenantParameters.tenantName + "] tenantDescription[" + tenantParameters.tenantDescription
+                    + "] tenantIconName[" + tenantParameters.tenantIconName
+                    + "] tenantIconPath[" + tenantParameters.tenantIconPath
+                    + "] tenantUsername[" + tenantParameters.tenantUsername
+                    + "] tenantPassword[" + tenantParameters.tenantPassword
+                    + "] Activate ? [" + tenantParameters.tenantActivate + "]";
+            logger.info("EDIT Tenant " + logDetails);
+
+            // because we can't trust the engine (which return a CreateException and in fact create the tenant), we check before the parameters
+            String errorParameters = "";
+            if (tenantParameters.tenantName == null || tenantParameters.tenantName.trim().length() == 0) {
+                errorParameters += "No Tenant Name;";
+            }
+            if (tenantParameters.tenantDescription == null || tenantParameters.tenantDescription.trim().length() == 0) {
+                errorParameters += "No Tenant Description;";
+            }
+          // acceptable to  not have the tenantUserName and the tenantpassword
+
+            // BonitaHome : only before 7.3
+            String bonitaHome = null;
+            final String bonitaVersion = platformAPI.getPlatform().getVersion();
+            logger.info("BonitaVersion[" + bonitaVersion + "]");
+            if (bonitaVersion.startsWith("6.") || bonitaVersion.startsWith("7.0")
+                    || bonitaVersion.startsWith("7.1")
+                    || bonitaVersion.startsWith("7.2"))
+            {
+
+                bonitaHome = System.getProperty(BonitaHome.BONITA_HOME);
+                if (bonitaHome == null) {
+                    bonitaHome = tenantParameters.defaultBonitaHome;
+                }
+                if (bonitaHome == null) {
+                    errorParameters += "Can't access BONITA_HOME;";
+                    tenantResult.listEvents.add(EventNoBonitaHome);
+                }
+            }
+
+            if (errorParameters.length() > 0)
+            {
+                final BEvent eventMissingParameters = new BEvent(EventTenantEditMissingParameter, errorParameters);
+                eventMissingParameters.log();
+                tenantResult.listEvents.add(eventMissingParameters);
+                return tenantResult;
+            }
+
+            final TenantUpdater tenantUpdater = new TenantUpdater();
+            tenantUpdater.setName(tenantParameters.tenantName);
+            tenantUpdater.setDescription(tenantParameters.tenantDescription);
+
+            if (tenantParameters.tenantUsername != null && tenantParameters.tenantUsername.length() > 0) {
+                tenantUpdater.setUsername(tenantParameters.tenantUsername);
+            }
+
+            if (tenantParameters.tenantPassword != null && tenantParameters.tenantPassword.length() > 0) {
+                tenantUpdater.setPassword(tenantParameters.tenantPassword);
+            }
+
+            platformAPI.updateTenant(tenantParameters.tenantId, tenantUpdater);
+            // get the list of tenant ?
+            logger.info("refreshListTenant list[" + tenantParameters.refreshListTenant + "]");
+            tenantResult.listEvents.add(new BEvent(EventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] Updated"));
+
+            if (tenantParameters.refreshListTenant)
+            {
+                tenantResult.addResult(getListTenants(tenantParameters));
+            }
+
+        } catch (final PlatformLoginException le)
+        {
+            logger.severe("Can't connect with user [" + tenantParameters.platformUsername + "]");
+            tenantResult.listEvents.add(EventPlatformLogin);
+        } catch (final UpdateException ae)
+        {
+            logger.severe("Update exception " + logDetails + "] :" + ae.toString());
+            tenantResult.listEvents.add(new BEvent(EventTenantUpdate, ae, logDetails));
+
+        } catch (BonitaHomeNotSetException | ServerAPIException | UnknownAPITypeException e)
+        {
+            logger.severe("Error during getlistTenants " + e.toString());
+            tenantResult.listEvents.add(EventBadPlatform);
+
+        } catch (final Exception e)
+        {
+            final StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            final String exceptionDetails = sw.toString();
+
+            logger.severe("Error during addTenant :" + exceptionDetails);
+            tenantResult.listEvents.add(new BEvent(EventGeneralError, e, ""));
+
+        }
+        logEndOperation("addTenant", " newTenantId[" + tenantResult.tenantId + "]", tenantResult);
+
+        return tenantResult;
+
+    }
     /**
      * @param tenantParameters
      * @return
@@ -537,7 +683,12 @@ public class ContainerShipAccess {
                 tenantResult.listEvents.add(EventTenantAdminNotAvailable);
                 return tenantResult;
             }
+            if (tenantParameters.tenantId == null)
+            {
+                tenantResult.listEvents.add(new BEvent(EventTenantNotFound, "tenantId is not give as parameters"));
+                return tenantResult;
 
+            }
             platformAPI.deactiveTenant(tenantParameters.tenantId);
             tenantResult.listEvents.add(new BEvent(EventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] Deactivate"));
             // get the list of tenant ?
@@ -590,8 +741,12 @@ public class ContainerShipAccess {
         final TenantResult tenantResult = new TenantResult();
         try
         {
+            String bonitaHome = null;
 
-            String bonitaHome = System.getProperty(BonitaHome.BONITA_HOME);
+            final PlatformAPI platformAPI = getPlatformAPI(tenantParameters);
+            if (isBonitaHome(platformAPI))
+            {
+                bonitaHome = System.getProperty(BonitaHome.BONITA_HOME);
             if (bonitaHome == null) {
                 bonitaHome = tenantParameters.defaultBonitaHome;
             }
@@ -599,8 +754,7 @@ public class ContainerShipAccess {
                 tenantResult.listEvents.add(EventNoBonitaHome);
                 return tenantResult;
             }
-
-            final PlatformAPI platformAPI = getPlatformAPI(tenantParameters);
+            }
 
             if (platformAPI == null) {
                 EventTenantAdminNotAvailable.log();
@@ -619,11 +773,12 @@ public class ContainerShipAccess {
             tenantResult.listEvents.add(new BEvent(EventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] removed"));
 
             // purge directory : the delete tenant does not do the job on client side
+            if (bonitaHome != null)
+            {
+                tenantResult.listEvents.addAll(ToolboxFile.deleteFolder(bonitaHome + "/client/tenants/" + tenantParameters.tenantId));
 
-            tenantResult.listEvents.addAll(ToolboxFile.deleteFolder(bonitaHome + "/client/tenants/" + tenantParameters.tenantId));
-
-            tenantResult.listEvents.addAll(ToolboxFile.deleteFolder(bonitaHome + "/engine-server/conf/tenants/" + tenantParameters.tenantId));
-
+                tenantResult.listEvents.addAll(ToolboxFile.deleteFolder(bonitaHome + "/engine-server/conf/tenants/" + tenantParameters.tenantId));
+            }
             // get the list of tenant ?
             logger.info("refreshListTenant list[" + tenantParameters.refreshListTenant + "]");
             if (tenantParameters.refreshListTenant)
@@ -762,7 +917,7 @@ public class ContainerShipAccess {
      */
     private static void logBeginOperation(final String method, final String message, final TenantParameters tenantParameters)
     {
-        logger.info("~~~~~~~~ START ContainerShipAccess." + method + ": " + message
+        logger.info("~~~~~~~~ START 20160815 V1.2  ContainerShipAccess." + method + ": " + message
                 + (tenantParameters != null ? " param[" + tenantParameters.toString() + "]" : ""));
     }
 
@@ -775,9 +930,20 @@ public class ContainerShipAccess {
      */
     private static void logEndOperation(final String method, final String message, final TenantResult tenantResult)
     {
-        logger.info("~~~~~~~~ END ContainerShipAccess." + method + ":  status [" + tenantResult.toString() + "] " + message + " events["
+        logger.info("~~~~~~~~ END V1.2 ContainerShipAccess." + method + ":  status [" + tenantResult.toString() + "] " + message + " events["
                 + tenantResult.listEvents + "]");
 
     }
 
+    private static boolean isBonitaHome(final PlatformAPI platformAPI) throws PlatformNotFoundException
+    {
+        final String bonitaVersion = platformAPI.getPlatform().getVersion();
+        logger.info("BonitaVersion[" + bonitaVersion + "]");
+        if (bonitaVersion.startsWith("6.") || bonitaVersion.startsWith("7.0")
+                || bonitaVersion.startsWith("7.1")
+                || bonitaVersion.startsWith("7.2")) {
+            return true;
+        }
+        return false;
+    }
 }

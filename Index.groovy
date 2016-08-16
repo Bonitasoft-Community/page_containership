@@ -82,7 +82,7 @@ public class Index implements PageController {
 
 			String action=request.getParameter("action");
 			String jsonparam=request.getParameter("jsonparam");
-			logger.info("###################################### action is["+action+"] !");
+			logger.info("###################################### CustomPageTenant : action 18344 2.0 is["+action+"] !");
 			if (action==null || action.length()==0 )
 			{
 				logger.severe("RUN Default !");
@@ -99,41 +99,49 @@ public class Index implements PageController {
 			Map<String,Object> answer = null;
 			if ("getplatforminformation".equals(action))
 			{
-				TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam);
+				TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam, session);
 				TenantResult tenantResult = ContainerShipAccess.getPlatformInformation( tenantParameters);
 				answer = tenantResult.getAnswer();
 			}
             else if ("getlisttenants".equals(action))
             {
-                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam);
+                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam, session);
                 TenantResult tenantResult = ContainerShipAccess.getListTenants( tenantParameters);
                 answer = tenantResult.getAnswer();
             }
 			else if ("connection".equals(action))
 			{
-				TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam);
+				TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam, session);
 				TenantResult tenantResultPlatform = ContainerShipAccess.connection( tenantParameters);
 				answer = tenantResultPlatform.getAnswer();
 				
 			} else if ("addtenant".equals(action))
             {
-                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam);
+                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam, session);
                 TenantResult tenantResultPlatform = ContainerShipAccess.addTenant( tenantParameters);
+                answer = tenantResultPlatform.getAnswer();
+                
+            } else if ("edittenant".equals(action))
+            {
+                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam, session);
+                TenantResult tenantResultPlatform = ContainerShipAccess.editTenant( tenantParameters);
                 answer = tenantResultPlatform.getAnswer();
                 
             } else if ("activatetenant".equals(action))
             {
-                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam);
+                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam, session);
                 TenantResult tenantResultPlatform = ContainerShipAccess.activateTenant( tenantParameters);
                 answer = tenantResultPlatform.getAnswer();
+                
             } else if ("desactivateTenant".equals(action))
             {
-                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam);
+                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam, session);
                 TenantResult tenantResultPlatform = ContainerShipAccess.desactivateTenant( tenantParameters);
                 answer = tenantResultPlatform.getAnswer();
+                
             } else if ("removetenant".equals(action))
             {
-                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam);
+                TenantParameters tenantParameters = TenantParameters.getInstance(jsonparam,session);
                 TenantResult tenantResultPlatform = ContainerShipAccess.removeTenant( tenantParameters);
                 answer = tenantResultPlatform.getAnswer();
             } 
