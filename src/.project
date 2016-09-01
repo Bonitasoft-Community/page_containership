@@ -36,5 +36,20 @@
 			<type>1</type>
 			<location>C:/atelier/BPM-SP-7.2.0/workspace/AI Training/bonita_home/client/tenants/1/work/pages/custompage_containership/index.html</location>
 		</link>
+		<link>
+			<name>custompage/7.3.1b/Index.groovy</name>
+			<type>1</type>
+			<location>C:/atelier/BPM-SP-7.3.1/workspace/tomcat/temp/bonita_portal_10800@pc-pierre-yves/tenants/1/pages/custompage_containership/Index.groovy</location>
+		</link>
+		<link>
+			<name>custompage/7.3.1b/containershipmonitor.js</name>
+			<type>1</type>
+			<location>C:/atelier/BPM-SP-7.3.1/workspace/tomcat/temp/bonita_portal_10800@pc-pierre-yves/tenants/1/pages/custompage_containership/resources/containershipmonitor.js</location>
+		</link>
+		<link>
+			<name>custompage/7.3.1b/index.html</name>
+			<type>1</type>
+			<location>C:/atelier/BPM-SP-7.3.1/workspace/tomcat/temp/bonita_portal_10800@pc-pierre-yves/tenants/1/pages/custompage_containership/index.html</location>
+		</link>
 	</linkedResources>
 </projectDescription>
