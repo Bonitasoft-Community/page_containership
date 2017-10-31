@@ -180,7 +180,7 @@ public class ContainerShipAccess {
         // public Map<String, Object> result = new HashMap<String, Object>();
         public List<BEvent> listEvents = new ArrayList<BEvent>();
         public Long tenantId;
-        List<Tenant> listTenants = new ArrayList<Tenant>();
+        public List<Tenant> listTenants = new ArrayList<Tenant>();
         Map<String, String> platformInfo = null;
 
 
@@ -296,7 +296,16 @@ public class ContainerShipAccess {
         {
             logger.severe("Can't connect with user [" + tenantParameters.platformUsername + "]");
             tenantResult.listEvents.add(EventPlatformLogin);
-        } catch (BonitaHomeNotSetException | ServerAPIException | UnknownAPITypeException e)
+        // } catch (BonitaHomeNotSetException | ServerAPIException | UnknownAPITypeException e)
+        } catch (BonitaHomeNotSetException e)
+        {
+            logger.severe("Error during getlistTenants " + e.toString());
+            tenantResult.listEvents.add(EventBadPlatform);
+        } catch (ServerAPIException e)
+        {
+            logger.severe("Error during getlistTenants " + e.toString());
+            tenantResult.listEvents.add(EventBadPlatform);
+        } catch (UnknownAPITypeException e)
         {
             logger.severe("Error during getlistTenants " + e.toString());
             tenantResult.listEvents.add(EventBadPlatform);
@@ -901,11 +910,19 @@ public class ContainerShipAccess {
             APITypeManager.setAPITypeAndParams(ApiAccessType.HTTP, map);
         }
         // get the PlatformLoginAPI using the PlatformAPIAccessor
-        final PlatformLoginAPI platformLoginAPI = PlatformAPIAccessor.getPlatformLoginAPI();
-
+        Object platformLoginAPIObj = PlatformAPIAccessor.getPlatformLoginAPI();
+        if (platformLoginAPIObj instanceof  org.bonitasoft.engine.api.PlatformLoginAPI )
+        {
+        	PlatformSession session= ((org.bonitasoft.engine.api.PlatformLoginAPI) platformLoginAPIObj).login(tenantParameters.platformUsername, tenantParameters.platformPassword);
+        	return session;
+        }
+        else 
+        {
+        	return null;
+        }
         // log in to the platform to create a section
-        final PlatformSession session = platformLoginAPI.login(tenantParameters.platformUsername, tenantParameters.platformPassword);
-        return session;
+        // final PlatformSession session = platformLoginAPI.login(tenantParameters.platformUsername, tenantParameters.platformPassword);
+        // return session;
     }
 
     /**
