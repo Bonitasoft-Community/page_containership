@@ -66,5 +66,25 @@
 			<type>1</type>
 			<location>C:/atelier/BPM-SP-7.3.1/workspace/tomcat/temp/bonita_portal_10800@pc-pierre-yves/tenants/1/pages/custompage_containership/index.html</location>
 		</link>
+		<link>
+			<name>custompage/7.4.3/Actions.groovy</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.4.3/workspace/tomcat/server/temp/bonita_portal_59072@Dragon-Pierre-Yves/tenants/1/pages/custompage_containership/Actions.groovy</locationURI>
+		</link>
+		<link>
+			<name>custompage/7.4.3/Index.groovy</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.4.3/workspace/tomcat/server/temp/bonita_portal_59072@Dragon-Pierre-Yves/tenants/1/pages/custompage_containership/Index.groovy</locationURI>
+		</link>
+		<link>
+			<name>custompage/7.4.3/containershipmonitor.js</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.4.3/workspace/tomcat/server/temp/bonita_portal_59072@Dragon-Pierre-Yves/tenants/1/pages/custompage_containership/resources/containershipmonitor.js</locationURI>
+		</link>
+		<link>
+			<name>custompage/7.4.3/index.html</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-7.4.3/workspace/tomcat/server/temp/bonita_portal_59072@Dragon-Pierre-Yves/tenants/1/pages/custompage_containership/index.html</locationURI>
+		</link>
 	</linkedResources>
 </projectDescription>
