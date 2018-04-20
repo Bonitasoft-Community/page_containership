@@ -174,7 +174,9 @@ public class Index implements PageController {
 				pageResourceProvider.getResourceAsStream("index.html").withStream { InputStream s->
 						indexContent = s.getText()
 				}
-				
+					
+				indexContent= indexContent.replace("@_CURRENTTIMEMILIS_@", String.valueOf(System.currentTimeMillis()));
+			
 				// def String pageResource="pageResource?&page="+ request.getParameter("page")+"&location=";
 				// indexContent= indexContent.replace("@_USER_LOCALE_@", request.getParameter("locale"));
 				// indexContent= indexContent.replace("@_PAGE_RESOURCE_@", pageResource);

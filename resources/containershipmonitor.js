@@ -55,7 +55,7 @@ appCommand.controller('ContainerShipControler',
 		var param = { "platformUsername": this.platformUsername,
 					  "platformPassword": this.platformPassword };
 					  
-		var json= angular.toJson(param, param);
+		var json= encodeURI(angular.toJson(param, param));
 		
 		$http.get( '?page=custompage_containership&action=connection&paramjson='+json  )
 		.then( function (jsonResult) {
@@ -81,7 +81,7 @@ appCommand.controller('ContainerShipControler',
 
 		var param = { "platformUsername": this.platformUsername,
 				  "platformPassword": this.platformPassword };
-		var json= angular.toJson(param, param);
+		var json= encodeURI( angular.toJson(param, param) );
 		
 		var self = this;
 		self.inprogress=true;
@@ -116,7 +116,7 @@ appCommand.controller('ContainerShipControler',
 
 		var param = { "platformUsername": this.platformUsername,
 				  "platformPassword": this.platformPassword };
-		var json= angular.toJson(param, param);
+		var json= encodeURI( angular.toJson(param, param));
 
 		
 		$http.get( '?page=custompage_containership&action=getlisttenants&paramjson='+json )
@@ -162,7 +162,7 @@ appCommand.controller('ContainerShipControler',
 		this.tenantinformation.platformUsername= this.platformUsername;
 		this.tenantinformation.platformPassword= this.platformPassword;
 		
-		var json= angular.toJson(this.tenantinformation, true);
+		var json= encodeURI( angular.toJson(this.tenantinformation, true));
 		
 		$http.get( '?page=custompage_containership&action=addtenant&paramjson='+json  )
 		.then( function (jsonResult) {
@@ -188,7 +188,7 @@ appCommand.controller('ContainerShipControler',
 		this.tenantinformation.platformUsername= this.platformUsername;
 		this.tenantinformation.platformPassword= this.platformPassword;
 		
-		var json= angular.toJson(this.tenantinformation, true);
+		var json= encodeURI( angular.toJson(this.tenantinformation, true));
 		
 		$http.get( '?page=custompage_containership&action=edittenant&paramjson='+json  )
 		.then( function (jsonResult) {
@@ -216,7 +216,7 @@ appCommand.controller('ContainerShipControler',
 		var param = { "platformUsername": this.platformUsername,
 				  "platformPassword": this.platformPassword,
 				  "id" : tenant.id };
-		var json= angular.toJson(param, param);
+		var json= encodeURI(angular.toJson(param, param));
 		
 		$http.get( '?page=custompage_containership&action=activatetenant&paramjson='+json )
 		.then( function successCallback(jsonResult) {
@@ -241,7 +241,7 @@ appCommand.controller('ContainerShipControler',
 		var param = { "platformUsername": this.platformUsername,
 				  "platformPassword": this.platformPassword,
 				  "id" : tenant.id };
-		var json= angular.toJson(param, param);
+		var json= encodeURI(angular.toJson(param, param));
 
 	
 		$http.get( '?page=custompage_containership&action=desactivateTenant&paramjson='+json  )
@@ -266,7 +266,7 @@ appCommand.controller('ContainerShipControler',
 		var param = { "platformUsername": this.platformUsername,
 				  "platformPassword": this.platformPassword,
 				  "id" : tenant.id };
-		var json= angular.toJson(param, param);
+		var json= encodeURI(angular.toJson(param, param));
 
 		$http.get( '?page=custompage_containership&action=removetenant&paramjson='+json  )
 		.then( function successCallback(jsonResult) {
