@@ -5,7 +5,7 @@
     <version>1.0.0</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <bonita.version>7.2.4</bonita.version>
+        <bonita.version>7.7.3</bonita.version>
     </properties>
 
     
@@ -18,11 +18,15 @@
             <version>${bonita.version}</version>
         </dependency>
 
+      <!--  mvn install:install-file -Dfile=bonita-client-sp-6.5.4.jar -DgroupId=com.bonitasoft.engine -DartifactId=bonita-client-sp -Dversion=6.5.4 -Dpackaging=jar -->
+
         <dependency>
             <groupId>com.bonitasoft.engine</groupId>
             <artifactId>bonita-client-sp</artifactId>
             <version>${bonita.version}</version>
         </dependency>
+        
+      <!--  mvn install:install-file -Dfile=bonita-common-sp-6.5.4.jar -DgroupId=com.bonitasoft.engine -DartifactId=bonita-common-sp -Dversion=6.5.4 -Dpackaging=jar -->
         <dependency>
             <groupId>com.bonitasoft.engine</groupId>
             <artifactId>bonita-common-sp</artifactId>

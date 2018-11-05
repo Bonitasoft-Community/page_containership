@@ -22,6 +22,21 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>custompage/6.5.4/Index.groovy</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-6.5.4/workspace/tomcat/bonita/client/tenants/1/work/pages/custompage_containership/Index.groovy</locationURI>
+		</link>
+		<link>
+			<name>custompage/6.5.4/containershipmonitor.js</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-6.5.4/workspace/tomcat/bonita/client/tenants/1/work/pages/custompage_containership/resources/containershipmonitor.js</locationURI>
+		</link>
+		<link>
+			<name>custompage/6.5.4/index.html</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/bonita/BPM-SP-6.5.4/workspace/tomcat/bonita/client/tenants/1/work/pages/custompage_containership/index.html</locationURI>
+		</link>
+		<link>
 			<name>custompage/7.2.0/Index.groovy</name>
 			<type>1</type>
 			<location>C:/atelier/BPM-SP-7.2.0/workspace/AI Training/bonita_home/client/tenants/1/work/pages/custompage_containership/Index.groovy</location>
