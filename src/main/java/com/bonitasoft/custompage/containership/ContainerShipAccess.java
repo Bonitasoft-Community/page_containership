@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import org.bonitasoft.engine.api.ApiAccessType;
@@ -47,55 +48,55 @@ public class ContainerShipAccess {
 
     private static Logger logger = Logger.getLogger(ContainerShipAccess.class.getName());
 
-    private static BEvent EventTenantAdminNotAvailable = new BEvent(ContainerShipAccess.class.getName(), 1, Level.APPLICATIONERROR,
-            "Tenant Administration not available", "The tenant administration is not available in the community version");
+    private static BEvent eventTenantAdminNotAvailable = new BEvent(ContainerShipAccess.class.getName(), 1, Level.APPLICATIONERROR,
+            "Tenant Administration not available", "The tenant administration is not available in the community version", "Tenant can't be created", "Use a subscription server");
 
-    private static BEvent EventPlatformLogin = new BEvent(ContainerShipAccess.class.getName(), 2, Level.APPLICATIONERROR,
-            "Platform login error", "login password is incorrect for the PLATFORM connection");
+    private static BEvent eventPlatformLogin = new BEvent(ContainerShipAccess.class.getName(), 2, Level.APPLICATIONERROR,
+            "Platform login error", "login password is incorrect for the PLATFORM connection", "Operation failed","Give a correct password");
 
-    private static BEvent EventBadPlatform = new BEvent(ContainerShipAccess.class.getName(), 3, Level.CRITICAL,
-            "Bad platform", "The platform is not correctly installed");
+    private static BEvent eventBadPlatform = new BEvent(ContainerShipAccess.class.getName(), 3, Level.CRITICAL,
+            "Bad platform", "The platform is not correctly installed", "Operation failed", "Check server log");
 
-    private static BEvent EventCantCreationTenant = new BEvent(ContainerShipAccess.class.getName(), 4, Level.APPLICATIONERROR,
-            "Can't create the tenant", "With the information, it's not possible to create the tenant");
+    private static BEvent eventCantCreationTenant = new BEvent(ContainerShipAccess.class.getName(), 4, Level.APPLICATIONERROR,
+            "Can't create the tenant", "With the information, it's not possible to create the tenant", "Tenant can't be created", "Give all required information" );
 
-    private static BEvent EventCantDeleteTenant = new BEvent(ContainerShipAccess.class.getName(), 5, Level.APPLICATIONERROR,
-            "Can't delete the tenant", "The deletion failed");
+    private static BEvent eventCantDeleteTenant = new BEvent(ContainerShipAccess.class.getName(), 5, Level.APPLICATIONERROR,
+            "Can't delete the tenant", "The deletion failed", "Operation can't be done", "Check the error");
 
-    private static BEvent EventTenantCreationMissingParameter = new BEvent(ContainerShipAccess.class.getName(), 6, Level.APPLICATIONERROR,
-            "Missing parameter to create the tenant", "A set of minimal parameters has to be give to create the tenant");
+    private static BEvent eventTenantCreationMissingParameter = new BEvent(ContainerShipAccess.class.getName(), 6, Level.APPLICATIONERROR,
+            "Missing parameter to create the tenant", "A set of minimal parameters has to be give to create the tenant", "Operation can't be done", "Give all informations");
 
-    private static BEvent EventCantActivateTenant = new BEvent(ContainerShipAccess.class.getName(), 7, Level.APPLICATIONERROR,
-            "Can't activate the tenant", "The tenant activation failed");
+    private static BEvent eventCantActivateTenant = new BEvent(ContainerShipAccess.class.getName(), 7, Level.APPLICATIONERROR,
+            "Can't activate the tenant", "The tenant activation failed", "Operation can't be done", "Check the error");
 
-    private static BEvent EventCantDesactivateTenant = new BEvent(ContainerShipAccess.class.getName(), 8, Level.APPLICATIONERROR,
-            "Can't desactivate the tenant", "The tenant desactivation failed");
+    private static BEvent eventCantDesactivateTenant = new BEvent(ContainerShipAccess.class.getName(), 8, Level.APPLICATIONERROR,
+            "Can't desactivate the tenant", "The tenant desactivation failed", "Operation can't be done", "Check the error");
 
-    private static BEvent EventTenantNotFound = new BEvent(ContainerShipAccess.class.getName(), 9, Level.APPLICATIONERROR,
-            "Given tenant does not exist", "The tenant ID given does not exist");
+    private static BEvent eventTenantNotFound = new BEvent(ContainerShipAccess.class.getName(), 9, Level.APPLICATIONERROR,
+            "Given tenant does not exist", "The tenant ID given does not exist", "Operation can't be done", "Give all informations");
 
-    private static BEvent EventGeneralError = new BEvent(ContainerShipAccess.class.getName(), 10, Level.APPLICATIONERROR,
-            "An error arrive during the execution", "Check Exception");
+    private static BEvent eventGeneralError = new BEvent(ContainerShipAccess.class.getName(), 10, Level.APPLICATIONERROR,
+            "An error arrive during the execution", "Check Exception", "Operation can't be done", "Check the error");
 
-    private static BEvent EventConnectionSuccess = new BEvent(ContainerShipAccess.class.getName(), 11, Level.SUCCESS,
-            "Connection success", "Connection to the platform is correct");
+    private static BEvent eventConnectionSuccess = new BEvent(ContainerShipAccess.class.getName(), 11, Level.SUCCESS,
+            "Connection success", "Connection to the platform is correct", "Operation can't be done", "Check the password");
 
-    private static BEvent EventTenantAlreadyExist = new BEvent(ContainerShipAccess.class.getName(), 12, Level.APPLICATIONERROR,
-            "Tenant already exist", "A tenant with this name already exist", "Give a different name");
+    private static BEvent eventTenantAlreadyExist = new BEvent(ContainerShipAccess.class.getName(), 12, Level.APPLICATIONERROR,
+            "Tenant already exist", "A tenant with this name already exist", "Two tenants with the same name can't exist, tenant name must be unique", "Give a different name");
 
-    private static BEvent EventOperationSuccess = new BEvent(ContainerShipAccess.class.getName(), 13, Level.SUCCESS,
+    private static BEvent eventOperationSuccess = new BEvent(ContainerShipAccess.class.getName(), 13, Level.SUCCESS,
             "Operation success", "The operation is a success");
 
-    private static BEvent EventNoBonitaHome = new BEvent(ContainerShipAccess.class.getName(), 14, Level.ERROR,
+    private static BEvent eventNoBonitaHome = new BEvent(ContainerShipAccess.class.getName(), 14, Level.ERROR,
             "No BonitaHome", "The variable BonitaHome can't be accessed",
             "The environmenent variable BONITA_HOME define the directory where the server install the ");
 
-    private static BEvent EventTenantUpdate = new BEvent(ContainerShipAccess.class.getName(), 15, Level.ERROR,
+    private static BEvent eventTenantUpdate = new BEvent(ContainerShipAccess.class.getName(), 15, Level.ERROR,
             "No BonitaHome", "The variable BonitaHome can't be accessed",
             "The environmenent variable BONITA_HOME define the directory where the server install the ");
 
-    private static BEvent EventTenantEditMissingParameter = new BEvent(ContainerShipAccess.class.getName(), 16, Level.APPLICATIONERROR,
-            "Missing parameter to edit the tenant", "A set of minimal parameters has to be give to edit the tenant");
+    private static BEvent eventTenantEditMissingParameter = new BEvent(ContainerShipAccess.class.getName(), 16, Level.APPLICATIONERROR,
+            "Missing parameter to edit the tenant", "A set of minimal parameters has to be give to edit the tenant", "Operation can't be done", "Give all informations");
 
     private static final String cstParamServerUrl = "serverurl";
     private static final String cstParamApplicationName = "applicationname";
@@ -217,7 +218,7 @@ public class ContainerShipAccess {
                 public int compare(final Map<String, Object> s1,
                         final Map<String, Object> s2)
                 {
-                    return ((String) s1.get("name")).compareTo((String) s2.get("name"));
+                    return ((String) s1.get("name")).compareToIgnoreCase((String) s2.get("name"));
                 }
             });
             answer.put("listtenants", listResultTenants);
@@ -255,7 +256,7 @@ public class ContainerShipAccess {
         {
             final TenantResult tenantResultListTenants = ContainerShipAccess.getListTenants(tenantParameters);
             tenantResultPlatform.addResult(tenantResultListTenants);
-            tenantResultPlatform.listEvents.add(EventConnectionSuccess);
+            tenantResultPlatform.listEvents.add( eventConnectionSuccess);
         }
         return tenantResultPlatform;
     }
@@ -281,7 +282,7 @@ public class ContainerShipAccess {
                 platformAPI = (PlatformAPI) plaformAPICommunity;
             } else {
                 // content.append("Comunity server : the Tenant administration is not available<br>");
-                tenantResult.listEvents.add(EventTenantAdminNotAvailable);
+                tenantResult.listEvents.add( eventTenantAdminNotAvailable);
                 return tenantResult;
             }
 
@@ -296,20 +297,20 @@ public class ContainerShipAccess {
         } catch (final PlatformLoginException le)
         {
             logger.severe("Can't connect with user [" + tenantParameters.platformUsername + "]");
-            tenantResult.listEvents.add(EventPlatformLogin);
+            tenantResult.listEvents.add( eventPlatformLogin);
         // } catch (BonitaHomeNotSetException | ServerAPIException | UnknownAPITypeException e)
         } catch (BonitaHomeNotSetException e)
         {
             logger.severe("Error during getlistTenants " + e.toString());
-            tenantResult.listEvents.add(EventBadPlatform);
+            tenantResult.listEvents.add( eventBadPlatform);
         } catch (ServerAPIException e)
         {
             logger.severe("Error during getlistTenants " + e.toString());
-            tenantResult.listEvents.add(EventBadPlatform);
+            tenantResult.listEvents.add( eventBadPlatform);
         } catch (UnknownAPITypeException e)
         {
             logger.severe("Error during getlistTenants " + e.toString());
-            tenantResult.listEvents.add(EventBadPlatform);
+            tenantResult.listEvents.add( eventBadPlatform);
 
         } catch (final Exception e)
         {
@@ -376,11 +377,12 @@ public class ContainerShipAccess {
         final TenantResult tenantResult = new TenantResult();
         try
         {
+            long beginTime = System.currentTimeMillis();
             final PlatformAPI platformAPI = getPlatformAPI(tenantParameters);
 
             if (platformAPI == null) {
-                EventTenantAdminNotAvailable.log();
-                tenantResult.listEvents.add(EventTenantAdminNotAvailable);
+                 eventTenantAdminNotAvailable.log();
+                tenantResult.listEvents.add( eventTenantAdminNotAvailable);
                 return tenantResult;
             }
 
@@ -389,7 +391,7 @@ public class ContainerShipAccess {
                     + "] tenantIconName[" + tenantParameters.tenantIconName
                     + "] tenantIconPath[" + tenantParameters.tenantIconPath
                     + "] tenantUsername[" + tenantParameters.tenantUsername
-                    + "] tenantPassword[" + tenantParameters.tenantPassword
+                    + "] tenantPassword[*******" 
                     + "] Activate ? [" + tenantParameters.tenantActivate + "]";
             logger.info("ADD Tenant " + logDetails);
 
@@ -418,15 +420,15 @@ public class ContainerShipAccess {
                 }
                 if (bonitaHome == null) {
                     errorParameters += "Can't access BONITA_HOME;";
-                    tenantResult.listEvents.add(EventNoBonitaHome);
+                    tenantResult.listEvents.add( eventNoBonitaHome);
                 }
             }
 
             if (errorParameters.length() > 0)
             {
-                final BEvent eventMissingParameters = new BEvent(EventTenantCreationMissingParameter, errorParameters);
+                final BEvent eventMissingParameters = new BEvent( eventTenantCreationMissingParameter, errorParameters);
                 eventMissingParameters.log();
-                tenantResult.listEvents.add(eventMissingParameters);
+                tenantResult.listEvents.add( eventMissingParameters);
                 return tenantResult;
             }
 
@@ -459,8 +461,10 @@ public class ContainerShipAccess {
             if (tenantParameters.tenantActivate) {
                 platformAPI.activateTenant(tenantResult.tenantId);
             }
+            long endTime = System.currentTimeMillis();
+
             if (!BEventFactory.isError(tenantResult.listEvents)) {
-                tenantResult.listEvents.add(new BEvent(EventOperationSuccess, "New tenant id[" + tenantResult.tenantId + "] created [" + logDetails + "]"));
+                tenantResult.listEvents.add(new BEvent( eventOperationSuccess, "New tenant id[" + tenantResult.tenantId + "] created [" + logDetails + "] in "+(endTime - beginTime )+" ms"));
             }
             // get the list of tenant ?
             logger.info("refreshListTenant list[" + tenantParameters.refreshListTenant + "]");
@@ -471,16 +475,16 @@ public class ContainerShipAccess {
         } catch (final PlatformLoginException le)
         {
             logger.severe("Can't connect with user [" + tenantParameters.platformUsername + "]");
-            tenantResult.listEvents.add(EventPlatformLogin);
+            tenantResult.listEvents.add( eventPlatformLogin);
         } catch (final AlreadyExistsException ae)
         {
             logger.severe("Already exist tenant [" + logDetails + "] :" + ae.toString());
-            tenantResult.listEvents.add(new BEvent(EventTenantAlreadyExist, ae, logDetails));
+            tenantResult.listEvents.add(new BEvent( eventTenantAlreadyExist, ae, logDetails));
 
         } catch (final CreationException ce)
         {
             logger.severe("Can't create the tenant [" + logDetails + "] :" + ce.toString());
-            tenantResult.listEvents.add(new BEvent(EventCantCreationTenant, ce, logDetails));
+            tenantResult.listEvents.add(new BEvent( eventCantCreationTenant, ce, logDetails));
         } catch (final Exception e)
         {
             final StringWriter sw = new StringWriter();
@@ -488,7 +492,7 @@ public class ContainerShipAccess {
             final String exceptionDetails = sw.toString();
 
             logger.severe("Error during addTenant :" + exceptionDetails);
-            tenantResult.listEvents.add(new BEvent(EventGeneralError, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventGeneralError, e, ""));
 
         }
         logEndOperation("addTenant", " newTenantId[" + tenantResult.tenantId + "]", tenantResult);
@@ -508,8 +512,8 @@ public class ContainerShipAccess {
             final PlatformAPI platformAPI = getPlatformAPI(tenantParameters);
 
             if (platformAPI == null) {
-                EventTenantAdminNotAvailable.log();
-                tenantResult.listEvents.add(EventTenantAdminNotAvailable);
+                 eventTenantAdminNotAvailable.log();
+                tenantResult.listEvents.add( eventTenantAdminNotAvailable);
                 return tenantResult;
             }
 
@@ -546,15 +550,15 @@ public class ContainerShipAccess {
                 }
                 if (bonitaHome == null) {
                     errorParameters += "Can't access BONITA_HOME;";
-                    tenantResult.listEvents.add(EventNoBonitaHome);
+                    tenantResult.listEvents.add( eventNoBonitaHome);
                 }
             }
 
             if (errorParameters.length() > 0)
             {
-                final BEvent eventMissingParameters = new BEvent(EventTenantEditMissingParameter, errorParameters);
+                final BEvent eventMissingParameters = new BEvent( eventTenantEditMissingParameter, errorParameters);
                 eventMissingParameters.log();
-                tenantResult.listEvents.add(eventMissingParameters);
+                tenantResult.listEvents.add( eventMissingParameters);
                 return tenantResult;
             }
 
@@ -573,7 +577,7 @@ public class ContainerShipAccess {
             platformAPI.updateTenant(tenantParameters.tenantId, tenantUpdater);
             // get the list of tenant ?
             logger.info("refreshListTenant list[" + tenantParameters.refreshListTenant + "]");
-            tenantResult.listEvents.add(new BEvent(EventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] Updated"));
+            tenantResult.listEvents.add(new BEvent( eventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] Updated"));
 
             if (tenantParameters.refreshListTenant)
             {
@@ -583,24 +587,24 @@ public class ContainerShipAccess {
         } catch (final PlatformLoginException le)
         {
             logger.severe("Can't connect with user [" + tenantParameters.platformUsername + "]");
-            tenantResult.listEvents.add(EventPlatformLogin);
+            tenantResult.listEvents.add( eventPlatformLogin);
         } catch (final UpdateException ae)
         {
             logger.severe("Update exception " + logDetails + "] :" + ae.toString());
-            tenantResult.listEvents.add(new BEvent(EventTenantUpdate, ae, logDetails));
+            tenantResult.listEvents.add(new BEvent( eventTenantUpdate, ae, logDetails));
 
         } catch (BonitaHomeNotSetException e )
             {
                 logger.severe("Error during getlistTenants " + e.toString());
-                tenantResult.listEvents.add(EventBadPlatform);
+                tenantResult.listEvents.add( eventBadPlatform);
             } catch (ServerAPIException e )
             {
                 logger.severe("Error during getlistTenants " + e.toString());
-                tenantResult.listEvents.add(EventBadPlatform);
+                tenantResult.listEvents.add( eventBadPlatform);
             } catch (UnknownAPITypeException e )
             {
                 logger.severe("Error during getlistTenants " + e.toString());
-                tenantResult.listEvents.add(EventBadPlatform);
+                tenantResult.listEvents.add( eventBadPlatform);
             
         } catch (final Exception e)
         {
@@ -609,7 +613,7 @@ public class ContainerShipAccess {
             final String exceptionDetails = sw.toString();
 
             logger.severe("Error during addTenant :" + exceptionDetails);
-            tenantResult.listEvents.add(new BEvent(EventGeneralError, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventGeneralError, e, ""));
 
         }
         logEndOperation("addTenant", " newTenantId[" + tenantResult.tenantId + "]", tenantResult);
@@ -631,13 +635,13 @@ public class ContainerShipAccess {
             final PlatformAPI platformAPI = getPlatformAPI(tenantParameters);
 
             if (platformAPI == null) {
-                EventTenantAdminNotAvailable.log();
-                tenantResult.listEvents.add(EventTenantAdminNotAvailable);
+                 eventTenantAdminNotAvailable.log();
+                tenantResult.listEvents.add( eventTenantAdminNotAvailable);
                 return tenantResult;
             }
 
             platformAPI.activateTenant(tenantParameters.tenantId);
-            tenantResult.listEvents.add(new BEvent(EventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] Activate"));
+            tenantResult.listEvents.add(new BEvent( eventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] Activate"));
 
             // get the list of tenant ?
             logger.info("refreshListTenant list[" + tenantParameters.refreshListTenant + "]");
@@ -649,27 +653,27 @@ public class ContainerShipAccess {
         } catch (final PlatformLoginException le)
         {
             logger.severe("Can't connect with user [" + tenantParameters.platformUsername + "]");
-            tenantResult.listEvents.add(EventPlatformLogin);
+            tenantResult.listEvents.add( eventPlatformLogin);
         } catch (final TenantActivationException te)
         {
             logger.severe("Can't activate the tenant [" + tenantResult.tenantId + "] : " + te.toString());
-            tenantResult.listEvents.add(new BEvent(EventCantActivateTenant, te, "TenantId[" + tenantResult.tenantId + "]"));
+            tenantResult.listEvents.add(new BEvent( eventCantActivateTenant, te, "TenantId[" + tenantResult.tenantId + "]"));
         } catch (final TenantNotFoundException tnotfounde)
         {
             logger.severe("Can't activate the tenant : not found [" + tenantResult.tenantId + "] : " + tnotfounde.toString());
-            tenantResult.listEvents.add(new BEvent(EventTenantNotFound, tnotfounde, "TenantId[" + tenantResult.tenantId + "]"));
+            tenantResult.listEvents.add(new BEvent( eventTenantNotFound, tnotfounde, "TenantId[" + tenantResult.tenantId + "]"));
         } catch (BonitaHomeNotSetException e )
         {
             logger.severe("Error during getlistTenants " + e.toString());
-            tenantResult.listEvents.add(EventBadPlatform);
+            tenantResult.listEvents.add( eventBadPlatform);
         } catch (ServerAPIException e )
         {
             logger.severe("Error during getlistTenants " + e.toString());
-            tenantResult.listEvents.add(EventBadPlatform);
+            tenantResult.listEvents.add( eventBadPlatform);
         } catch (UnknownAPITypeException e )
         {
             logger.severe("Error during getlistTenants " + e.toString());
-            tenantResult.listEvents.add(EventBadPlatform);
+            tenantResult.listEvents.add( eventBadPlatform);
         
         } catch (final Exception e)
         {
@@ -678,7 +682,7 @@ public class ContainerShipAccess {
             final String exceptionDetails = sw.toString();
 
             logger.severe("Error during activateTenant :" + exceptionDetails);
-            tenantResult.listEvents.add(new BEvent(EventGeneralError, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventGeneralError, e, ""));
         }
         logEndOperation("activateTenant", "", tenantResult);
 
@@ -700,18 +704,18 @@ public class ContainerShipAccess {
             final PlatformAPI platformAPI = getPlatformAPI(tenantParameters);
 
             if (platformAPI == null) {
-                EventTenantAdminNotAvailable.log();
-                tenantResult.listEvents.add(EventTenantAdminNotAvailable);
+                 eventTenantAdminNotAvailable.log();
+                tenantResult.listEvents.add( eventTenantAdminNotAvailable);
                 return tenantResult;
             }
             if (tenantParameters.tenantId == null)
             {
-                tenantResult.listEvents.add(new BEvent(EventTenantNotFound, "tenantId is not give as parameters"));
+                tenantResult.listEvents.add(new BEvent( eventTenantNotFound, "tenantId is not give as parameters"));
                 return tenantResult;
 
             }
             platformAPI.deactiveTenant(tenantParameters.tenantId);
-            tenantResult.listEvents.add(new BEvent(EventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] Deactivate"));
+            tenantResult.listEvents.add(new BEvent( eventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] Deactivate"));
             // get the list of tenant ?
             logger.info("refreshListTenant list[" + tenantParameters.refreshListTenant + "]");
             if (tenantParameters.refreshListTenant)
@@ -722,27 +726,27 @@ public class ContainerShipAccess {
         } catch (final PlatformLoginException le)
         {
             logger.severe("Can't connect with user [" + tenantParameters.platformUsername + "]");
-            tenantResult.listEvents.add(EventPlatformLogin);
+            tenantResult.listEvents.add( eventPlatformLogin);
         } catch (final TenantDeactivationException tde)
         {
             logger.severe("Can't desactivate the tenant [" + tenantResult.tenantId + "] : " + tde.toString());
-            tenantResult.listEvents.add(new BEvent(EventCantDesactivateTenant, tde, "TenantId[" + tenantResult.tenantId + "]"));
+            tenantResult.listEvents.add(new BEvent( eventCantDesactivateTenant, tde, "TenantId[" + tenantResult.tenantId + "]"));
         } catch (final TenantNotFoundException tnotfounde)
         {
             logger.severe("Can't activate the tenant : not found [" + tenantResult.tenantId + "] : " + tnotfounde.toString());
-            tenantResult.listEvents.add(new BEvent(EventTenantNotFound, tnotfounde, "TenantId[" + tenantResult.tenantId + "]"));
+            tenantResult.listEvents.add(new BEvent( eventTenantNotFound, tnotfounde, "TenantId[" + tenantResult.tenantId + "]"));
         } catch (BonitaHomeNotSetException e)
         {
             logger.severe("Error during desactivateTenant " + e.toString());
-            tenantResult.listEvents.add(new BEvent(EventBadPlatform, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventBadPlatform, e, ""));
         } catch (ServerAPIException e)
         {
             logger.severe("Error during desactivateTenant " + e.toString());
-            tenantResult.listEvents.add(new BEvent(EventBadPlatform, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventBadPlatform, e, ""));
         } catch (UnknownAPITypeException e)
         {
             logger.severe("Error during desactivateTenant " + e.toString());
-            tenantResult.listEvents.add(new BEvent(EventBadPlatform, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventBadPlatform, e, ""));
         } catch (final Exception e)
         {
             final StringWriter sw = new StringWriter();
@@ -750,7 +754,7 @@ public class ContainerShipAccess {
             final String exceptionDetails = sw.toString();
 
             logger.severe("Error during desactivateTenant :" + exceptionDetails);
-            tenantResult.listEvents.add(new BEvent(EventGeneralError, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventGeneralError, e, ""));
 
         }
         logEndOperation("desactivateTenant", "", tenantResult);
@@ -779,14 +783,14 @@ public class ContainerShipAccess {
                 bonitaHome = tenantParameters.defaultBonitaHome;
             }
             if (bonitaHome == null) {
-                tenantResult.listEvents.add(EventNoBonitaHome);
+                tenantResult.listEvents.add( eventNoBonitaHome);
                 return tenantResult;
             }
             }
 
             if (platformAPI == null) {
-                EventTenantAdminNotAvailable.log();
-                tenantResult.listEvents.add(EventTenantAdminNotAvailable);
+                 eventTenantAdminNotAvailable.log();
+                tenantResult.listEvents.add( eventTenantAdminNotAvailable);
                 return tenantResult;
             }
 
@@ -798,7 +802,7 @@ public class ContainerShipAccess {
                 // maybe already deactivate
             }
             platformAPI.deleteTenant(tenantParameters.tenantId);
-            tenantResult.listEvents.add(new BEvent(EventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] removed"));
+            tenantResult.listEvents.add(new BEvent( eventOperationSuccess, "Tenant [" + tenantParameters.tenantId + "] removed"));
 
             // purge directory : the delete tenant does not do the job on client side
             if (bonitaHome != null)
@@ -817,23 +821,23 @@ public class ContainerShipAccess {
         } catch (final PlatformLoginException le)
         {
             logger.severe("Can't connect with user [" + tenantParameters.platformUsername + "]");
-            tenantResult.listEvents.add(EventPlatformLogin);
+            tenantResult.listEvents.add( eventPlatformLogin);
         } catch (final DeletionException de)
         {
             logger.severe("Can't delete the tenant [" + tenantResult.tenantId + "] : " + de.toString());
-            tenantResult.listEvents.add(new BEvent(EventCantDeleteTenant, de, "TenantId[" + tenantResult.tenantId + "]"));
+            tenantResult.listEvents.add(new BEvent( eventCantDeleteTenant, de, "TenantId[" + tenantResult.tenantId + "]"));
         } catch (BonitaHomeNotSetException e)
         {
             logger.severe("Error during removeTenant " + e.toString());
-            tenantResult.listEvents.add(new BEvent(EventBadPlatform, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventBadPlatform, e, ""));
         } catch ( ServerAPIException  e)
         {
             logger.severe("Error during removeTenant " + e.toString());
-            tenantResult.listEvents.add(new BEvent(EventBadPlatform, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventBadPlatform, e, ""));
         } catch (UnknownAPITypeException e)
         {
             logger.severe("Error during removeTenant " + e.toString());
-            tenantResult.listEvents.add(new BEvent(EventBadPlatform, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventBadPlatform, e, ""));
 
         } catch (final Exception e)
         {
@@ -842,7 +846,7 @@ public class ContainerShipAccess {
             final String exceptionDetails = sw.toString();
 
             logger.severe("Error during removeTenant :" + exceptionDetails);
-            tenantResult.listEvents.add(new BEvent(EventGeneralError, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventGeneralError, e, ""));
 
         }
         logEndOperation("removeTenant", "", tenantResult);
@@ -864,8 +868,8 @@ public class ContainerShipAccess {
             final PlatformAPI platformAPI = getPlatformAPI( tenantParameters );
 
            if (platformAPI == null) {
-               EventTenantAdminNotAvailable.log();
-                tenantResult.listEvents.add(EventTenantAdminNotAvailable);
+                eventTenantAdminNotAvailable.log();
+                tenantResult.listEvents.add( eventTenantAdminNotAvailable);
                 return tenantResult;
             }
             tenantResult.platformInfo = platformAPI.getInformation();
@@ -878,19 +882,19 @@ public class ContainerShipAccess {
         } catch (final PlatformLoginException le)
         {
             logger.severe("Can't connect with user [" + tenantParameters.platformUsername + "]");
-            tenantResult.listEvents.add(EventPlatformLogin);
+            tenantResult.listEvents.add( eventPlatformLogin);
         } catch (BonitaHomeNotSetException e)
         {
             logger.severe("Error during getPlatformInformation " + e.toString());
-            tenantResult.listEvents.add(new BEvent(EventBadPlatform, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventBadPlatform, e, ""));
         } catch ( ServerAPIException e)
         {
             logger.severe("Error during getPlatformInformation " + e.toString());
-            tenantResult.listEvents.add(new BEvent(EventBadPlatform, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventBadPlatform, e, ""));
         } catch (UnknownAPITypeException e)
         {
             logger.severe("Error during getPlatformInformation " + e.toString());
-            tenantResult.listEvents.add(new BEvent(EventBadPlatform, e, ""));
+            tenantResult.listEvents.add(new BEvent( eventBadPlatform, e, ""));
 
         } catch (final Exception e)
         {
@@ -920,7 +924,7 @@ public class ContainerShipAccess {
      * @throws PlatformLoginException
      */
     private static PlatformAPI getPlatformAPI(final TenantParameters tenantParameters) throws BonitaHomeNotSetException, ServerAPIException,
-            UnknownAPITypeException, InvalidPlatformCredentialsException, PlatformLoginException
+            UnknownAPITypeException, PlatformLoginException
     {
         // connect !
         final PlatformSession session = connect(tenantParameters);
@@ -987,15 +991,30 @@ public class ContainerShipAccess {
 
     }
 
+    /**
+     * This is a Bonita Home when this is under 7.3
+     * @param platformAPI
+     * @return
+     * @throws PlatformNotFoundException
+     */
     private static boolean isBonitaHome(final PlatformAPI platformAPI) throws PlatformNotFoundException
     {
         final String bonitaVersion = platformAPI.getPlatform().getVersion();
         logger.info("BonitaVersion[" + bonitaVersion + "]");
-        if (bonitaVersion.startsWith("6.") || bonitaVersion.startsWith("7.0")
-                || bonitaVersion.startsWith("7.1")
-                || bonitaVersion.startsWith("7.2")) {
-            return true;
+        // get the first number
+        StringTokenizer st = new StringTokenizer(bonitaVersion,".");
+        try
+        {
+            int version = st.hasMoreTokens()? Integer.valueOf( st.nextToken()):0;
+            int release = st.hasMoreTokens()? Integer.valueOf( st.nextToken()):0;
+            if (version==0)
+                return false;
+            if (version < 7 || (version==7 && release < 3))
+                return true;
+            return false;
         }
-        return false;
+        catch(Exception e) {
+            return false;
+        }
     }
 }

@@ -43,20 +43,21 @@
 <body ng-app="containershipmonitor">
 
 
-<div class="bs-component"  ng-controller="ContainerShipControler as shipctrl">
+<div class="bs-component"  ng-controller="ContainerShipControler as ctrl">
 
 	<center>
 	<table><tr>
 		<td><h1>Container Ship</h1></td>
 	
 		<td rowspan="2"><img src="pageResource?page=custompage_containership&location=img/containership2.png" width="150" heigth="150" /></td></tr>
-		<tr><td style="font-size:0.8em"> <a href="" ng-click="shipctrl.showhistory( ! shipctrl.isshowhistory )">V2.2</a></td></tr>
+		<tr><td style="font-size:0.8em"> <a href="" ng-click="ctrl.showhistory( ! ctrl.isshowhistory )">V2.3</a></td></tr>
 		<tr><td>
 		<div id="showHistory" ng-show="mainctrl.isshowhistory" style="border-width:2px;border-style:ridge;border-color:blue">
 		1.0 First version<br>
 		2.0 Update for 7.3 (No Bonita home) and update the look and feel
 		2.1 Widldly ready
 		2.2 Version 7.6 ready
+		2.3 Bonita 7.10
 		</td></tr>
 		</div>
 	</table>
@@ -66,79 +67,78 @@
 	<div class="col-lg-12">
 	
 		<!--  CONNECTION  -->	
-		<legend class="text-primary"><span class="glyphicon glyphicon-th"></span><input type="checkbox" ng-model="shipctrl.showconnection" title="Show the connection parameters"> Connection</legend>
-		<div ng-show="shipctrl.showconnection">
+		<legend class="text-primary"><span class="glyphicon glyphicon-th"></span><input type="checkbox" ng-model="ctrl.showconnection" title="Show the connection parameters"> Connection</legend>
+		<div ng-show="ctrl.showconnection">
 			<div class="explanation">
-				To manage the tenant, the Platform user is required. This user is set in BONITA_HOME/engine-server/conf/platform/bonita-platform-community-custom.properties<br>
+				To manage the tenant, the Platform user is required. This user is set in bonita-platform-community-custom.properties<br>
 				By default, it's platformAdmin / platform.
 				</div>
 		
 			<table class="table"> 
 				<tr> 
-					<td>Platform User</td><td><input type="text" ng-model="shipctrl.platformUsername"></td> 
-					<td>Platform Password</td><td><input type="password" ng-model="shipctrl.platformPassword"></td> 
+					<td>Platform User</td><td><input type="text" ng-model="ctrl.newplatformUsername"></td> 
+					<td>Platform Password</td><td><input type="password" ng-model="ctrl.newplatformPassword"></td> 
 				</tr>
-				<tr><td colspan="2"> <button class="btn btn-primary" ng-click="shipctrl.connection()">Connection</button></td></tr>
+				<tr><td colspan="2"> <button class="btn btn-primary" ng-click="ctrl.connection()">Connection</button></td></tr>
 				<tr><td colspan="2"> 
-				 	<div ng-show="shipctrl.inprogress"><span class="Loading">.</span></div>
-					<span class="label label-success">{{shipctrl.connectionmessage}}</span><br>
-						<span class="label label-danger">{{shipctrl.connectionerrormessage}}</span><br>
-						<div ng-bind-html="shipctrl.getListEvents(shipctrl.connectionlisteventshtml )"></div>
-				
+				 	<div ng-show="ctrl.inprogress"><span class="Loading">.</span></div>
+					<span class="label label-success">{{ctrl.connectionmessage}}</span><br>
+						<span class="label label-danger">{{ctrl.connectionerrormessage}}</span><br>
+						<div ng-bind-html="ctrl.getListEvents(ctrl.connectionlisteventshtml )"></div>
 			</table>
 		</div>
-		
+	
 		
 		<!--  PLATEFORM INFORMATION  -->
 		<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>
-			<a href="#" ng-click="shipctrl.showinformation = ! shipctrl.showinformation" style="text-decoration:none">					
-			  				<span ng-show="shipctrl.showinformation" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
+			<a href="#" ng-click="ctrl.showinformation = ! ctrl.showinformation" style="text-decoration:none">					
+			  				<span ng-show="ctrl.showinformation" class="glyphicon glyphicon-chevron-down" style="font-size: 18px;"></span>
  			</a>
-			<a href="#" ng-click="shipctrl.showinformation = ! shipctrl.showinformation" style="text-decoration:none">					
-				<span ng-show="! shipctrl.showinformation" class="glyphicon glyphicon-chevron-right"  style="font-size: 18px;"></span>
+			<a href="#" ng-click="ctrl.showinformation = ! ctrl.showinformation" style="text-decoration:none">					
+				<span ng-show="! ctrl.showinformation" class="glyphicon glyphicon-chevron-right"  style="font-size: 18px;"></span>
 			</a>		
 			 Platform configuration
 		</legend>
 		
-		<table ng-show="shipctrl.showinformation" class="table">
-			<tr> <td style="background-color:#99D9EA">Platform</td><td>{{shipctrl.platforminfo.platformstate}}</td> 
+		<table ng-show="ctrl.showinformation" class="table">
+			<tr> <td style="background-color:#99D9EA">Platform</td><td>{{ctrl.platforminfo.platformstate}}</td> 
 			 	 <td style="background-color:#99D9EA">&nbsp;</td> </tr>
-			<tr> <td style="background-color:#99D9EA">Start date</td><td>{{shipctrl.platforminfo.startDate | date}}</td> 
-				 <td style="background-color:#99D9EA">Expiration date</td><td>{{shipctrl.platforminfo.expirationDate | date}}</td></tr>
-			<tr> <td style="background-color:#99D9EA">Customer name</td><td>{{shipctrl.platforminfo.customerName}}</td>  
-				 <td style="background-color:#99D9EA">Contact info</td><td>{{shipctrl.platforminfo.contactInfo}}</td>   </tr>
-			<tr> <td style="background-color:#99D9EA">Version</td><td>{{shipctrl.platforminfo.platformversion}}</td>      
-				 <td style="background-color:#99D9EA">Subscription</td><td>{{shipctrl.platforminfo.subscriptionType}}</td> </tr>
-			<tr> <td style="background-color:#99D9EA">Number Of CPU Cores</td><td>{{shipctrl.platforminfo.numberOfCPUCores}}</td>
+			<tr> <td style="background-color:#99D9EA">Start date</td><td>{{ctrl.platforminfo.startDate | date}}</td> 
+				 <td style="background-color:#99D9EA">Expiration date</td><td>{{ctrl.platforminfo.expirationDate | date}}</td></tr>
+			<tr> <td style="background-color:#99D9EA">Customer name</td><td>{{ctrl.platforminfo.customerName}}</td>  
+				 <td style="background-color:#99D9EA">Contact info</td><td>{{ctrl.platforminfo.contactInfo}}</td>   </tr>
+			<tr> <td style="background-color:#99D9EA">Version</td><td>{{ctrl.platforminfo.platformversion}}</td>      
+				 <td style="background-color:#99D9EA">Subscription</td><td>{{ctrl.platforminfo.subscriptionType}}</td> </tr>
+			<tr> <td style="background-color:#99D9EA">Number Of CPU Cores</td><td>{{ctrl.platforminfo.numberOfCPUCores}}</td>
 				 <td style="background-color:#99D9EA">&nbsp;</td></tr>
 		</table>
 			
 		<!--  TENANTS  -->
 		<legend class="text-primary"><span class="glyphicon glyphicon-th"></span>Tenants</legend>
-		<div ng-show="! shipctrl.isConnected">
+		<div ng-show="! ctrl.isConnected">
 			<span class="alert alert-danger">Connect to the platform to see the tenants</span>
 		</div>
-		<div ng-show="shipctrl.isConnected">
-			<button ng-click="shipctrl.refresh()" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-refresh" aria-hidden="true" title="Refresh"></span></button><br>
-			<div ng-show="shipctrl.inprogress"><span class="Loading">.</span></div>
-			<span class="label label-success">{{shipctrl.message}}</span><br>
-			<span class="label label-danger">{{shipctrl.errormessage}}</span><br>
-			<div ng-bind-html="shipctrl.getListEvents(shipctrl.listeventshtml )"></div>
+		<div ng-show="ctrl.isConnected">
+			<button ng-click="ctrl.refresh()" class="btn btn-info btn-xs"><span class="glyphicon glyphicon-refresh" aria-hidden="true" title="Refresh"></span></button><br>
+			<div ng-show="ctrl.inprogress"><span class="Loading">.</span></div>
+			<span class="label label-success">{{ctrl.message}}</span><br>
+			<span class="label label-danger">{{ctrl.errormessage}}</span><br>
+			<div ng-bind-html="ctrl.getListEvents(ctrl.listeventshtml )"></div>
 
-			<button class="btn btn-primary" ng-click="shipctrl.openToAddTenantInformation()">Add a Tenant</button><p>
+			<button class="btn btn-primary" ng-click="ctrl.openToAddTenantInformation()">Add a Tenant</button><p>
 		
 			<!--  <table class="table table-striped table-hover table-condensed" > -->
 			<table class="table table-condensed" >
-				<tr style="background-color:#99D9EA"><th>ID</th>
+				<tr style="background-color:#99D9EA">
 						<th>Name</th>
-						<th>Version</th>
 						<th>State</th>
-						<th>Action</th>
+						<th>ID</th>
+						<th>Version</th>
+						<th>Actions</th>
 						<th></th>
 				</tr>
-				<!--  style="{{shipctrl.getClassLine( tenantinfo )}}" -->
-				<tr ng-repeat="tenantinfo in shipctrl.listtenants track by $index" >
-						<td><a href="{{'/bonita?tenant='+tenantinfo.id}}"  target='' style="color: #000000" title="Access the Tenant in a new windows">{{tenantinfo.id}}</a></td>
+				<!--  style="{{ctrl.getClassLine( tenantinfo )}}" -->
+				<tr ng-repeat="tenantinfo in ctrl.listtenants track by $index" >
 						<td>
 							<table>
 								<tr ng-show="tenantinfo.isCurrent "><td>{{tenantinfo.name}}</td><td><span class="label label-info">(current)</span></td></tr>
@@ -146,7 +146,6 @@
 							</table>
 							</div>
 						</td>
-						<td>{{tenantinfo.description}}</td>
 						<td>
 							<div ng-show="tenantinfo.state =='ACTIVATED'" >
 								<span class="label label-success">Activated</span>
@@ -155,18 +154,23 @@
 							<div ng-show="tenantinfo.state =='DEACTIVATED'">
 								<span class="label label-warning">Deactivated</span>
 							</div>
-						</td><td>
+						</td>
+						<td><a href="{{'/bonita?tenant='+tenantinfo.id}}"  target="_blank" style="color: #000000" title="Access the Tenant in a new window">{{tenantinfo.id}}</a>
+							<div style="font: italic;font-size: small">See comment below. Use /bonita?tenant={{tenantinfo.id}} in a private windows</div>
+						</td>
+						<td>{{tenantinfo.description}}</td>
+						<td>
 							<table style="padding-left: 10px;"><tr  style="padding-left: 10px;">  
 								<td>
-								<button class="btn btn-xs" ng-click="shipctrl.openEditTenant( tenantinfo )">Edit tenant</button>&nbsp;&nbsp;
+								<button class="btn btn-xs btn-info" ng-click="ctrl.openEditTenant( tenantinfo )">Edit tenant</button>&nbsp;&nbsp;
 								</td>
 								<td ng-show="! tenantinfo.isCurrent ">
-							   		<button class="btn btn-xs " ng-show="tenantinfo.state =='ACTIVATED'" ng-click="shipctrl.deactivatetenant( tenantinfo )">Deactivate</button>
-			    					<button class="btn btn-xs" ng-show="tenantinfo.state =='DEACTIVATED'"  ng-click="shipctrl.activatetenant( tenantinfo )">Activate</button>
+							   		<button class="btn btn-xs btn-info" ng-show="tenantinfo.state =='ACTIVATED'" ng-click="ctrl.deactivatetenant( tenantinfo )">Deactivate</button>
+			    					<button class="btn btn-xs btn-primary" ng-show="tenantinfo.state =='DEACTIVATED'"  ng-click="ctrl.activatetenant( tenantinfo )">Activate</button>
 			    					&nbsp;&nbsp;
 								</td>
 								<td ng-show="! tenantinfo.isCurrent ">
-									<button class="btn btn-xs" ng-click="shipctrl.removetenant( tenantinfo )">Remove tenant</button>
+									<button class="btn btn-xs btn-danger" ng-click="ctrl.removetenant( tenantinfo )">Remove tenant</button>
 									&nbsp;&nbsp;
 									</td>
 									</tr></table>
@@ -174,33 +178,35 @@
 						</td>
 				</tr>
 			</table>
+				<div class="alert alert-warning">
+					When you click (and log) to the new tenant, this page is then referenting to this new tenant (there are one login per browser).
+				Use a private window else, and give this URL /bonita?tenant=&lt;tenantID&gt;</div>
 				
-				
-			<!-- <span class="label label-info">{{shipctrl.listtenants}}</span> -->
+			<!-- <span class="label label-info">{{ctrl.listtenants}}</span> -->
 		</div>
 				
 		<!--  Add / Edit  -->				
-		<modal-dialog show='shipctrl.isshowTenantInformation' dialog-title='Details' width='75%' height='80%' 	close="shipctrl.closeTenantInformation()"> 
+		<modal-dialog show='ctrl.isshowTenantInformation' dialog-title='Details' width='75%' height='80%' 	close="ctrl.closeTenantInformation()"> 
 				<div class="modal-content" width='100%' height='100%'>
 				<table >
-					<tr> <td>Id</td><td>&nbsp;<input type="text" ng-model="shipctrl.tenantinformation.id" disabled></td>   </tr>
-					<tr> <td>Name</td><td>&nbsp;<input type="text" ng-model="shipctrl.tenantinformation.name"></td>   </tr>
-					<tr> <td>Description</td><td>&nbsp;<textarea  ng-model="shipctrl.tenantinformation.description"> </textarea></td>   </tr>
-					<tr> <td>Tenant UserName</td><td>&nbsp;<input type="text" ng-model="shipctrl.tenantinformation.tenantUsername"></td>   </tr>
-					<tr> <td>Tenant Password</td><td>&nbsp;<input type="password" ng-model="shipctrl.tenantinformation.tenantPassword"></td>   </tr>
+					<tr> <td>Id</td><td>&nbsp;<input type="text" ng-model="ctrl.tenantinformation.id" disabled></td>   </tr>
+					<tr> <td>Name</td><td>&nbsp;<input type="text" ng-model="ctrl.tenantinformation.name"></td>   </tr>
+					<tr> <td>Description</td><td>&nbsp;<textarea  ng-model="ctrl.tenantinformation.description"> </textarea></td>   </tr>
+					<tr> <td>Tenant UserName</td><td>&nbsp;<input type="text" ng-model="ctrl.tenantinformation.tenantUsername"></td>   </tr>
+					<tr> <td>Tenant Password</td><td>&nbsp;<input type="password" ng-model="ctrl.tenantinformation.tenantPassword"></td>   </tr>
 					<tr> <td colspan="2">	
 					
-						<button class="btn btn-primary" ng-show="shipctrl.isAddTenant" ng-click="shipctrl.addTenant()">Add Tenant</button> 
-						<button class="btn btn-primary" ng-show="shipctrl.isEditTenant" ng-click="shipctrl.editTenant()">Update Tenant</button> 
+						<button class="btn btn-primary" ng-show="ctrl.isAddTenant" ng-click="ctrl.addTenant()">Add Tenant</button> 
+						<button class="btn btn-primary" ng-show="ctrl.isEditTenant" ng-click="ctrl.editTenant()">Update Tenant</button> 
 					</td></tr>
 						
 				</table>
-				<span class="label label-success">{{shipctrl.message}}</span><br>
-				<span class="label label-danger">{{shipctrl.errormessage}}</span><br>
-		    	<div ng-bind-html="shipctrl.getListEvents(shipctrl.listeventshtml )"></div>
+				<span class="label label-success">{{ctrl.message}}</span><br>
+				<span class="label label-danger">{{ctrl.errormessage}}</span><br>
+		    	<div ng-bind-html="ctrl.getListEvents(ctrl.listeventshtml )"></div>
 		
 		
-				<div class="well"  ng-show="shipctrl.isAddTenant">
+				<div class="well"  ng-show="ctrl.isAddTenant">
 					Attention, when you add a tenant, the look and feel of the login page is not correctly set. You have to log one time with the technical user .
 				</div>
 				<p>

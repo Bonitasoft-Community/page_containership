@@ -21,7 +21,7 @@ var appCommand = angular.module('containershipmonitor', ['googlechart', 'ui.boot
 
 // Ping the server
 appCommand.controller('ContainerShipControler',
-	function ( $http, $scope,$sce ) {
+	function ( $http, $scope,$sce,$window ) {
 
 	this.showconnection=true;
 	this.showinformation=false;
@@ -52,25 +52,33 @@ appCommand.controller('ContainerShipControler',
 		self.inprogress=true;
 		self.connectionmessage="Processing...";
 		self.connectionerrormessage="";
-		var param = { "platformUsername": this.platformUsername,
-					  "platformPassword": this.platformPassword };
+		self.platformUsername =this.newplatformUsername;
+		self.platformPassword =this.newplatformPassword;
+		
+		var param = { "platformUsername": self.platformUsername,
+					  "platformPassword": self.platformPassword };
 					  
 		var json= encodeURI(angular.toJson(param, param));
 		
-		$http.get( '?page=custompage_containership&action=connection&paramjson='+json  )
-		.then( function (jsonResult) {
-			self.connectionmessage="";
-			self.connectionerrormessage ="";
-			self.platforminfo 		= jsonResult.data.platforminfo;
-			self.listtenants 		= jsonResult.data.listtenants;
-			self.connectionlisteventshtml = jsonResult.data.listeventshtml;
-			self.isConnected=true;
-			self.inprogress=false;
-	
-		}, function (jsonResult) {
-			this.connectionmessage="";
-			self.connectionerrormessage = "Error from server : "+jsonResult.status;
-			self.inprogress=false;
+		$http.get( '?page=custompage_containership&action=connection&paramjson='+json+"&t="+Date.now()  )
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+				self.inprogress=false;
+				self.connectionmessage="";
+				self.connectionerrormessage ="";
+				self.jsonResult 		= jsonResult.platforminfo;
+				self.listtenants 		= jsonResult.listtenants;
+				self.connectionlisteventshtml = jsonResult.listeventshtml;
+				self.isConnected=true;
+			})
+      		.error( function(jsonResult, statusHttp, headers, config) {
+      			self.connectionmessage="";
+				self.connectionerrormessage = "Error from server : "+jsonResult.status;
+				self.inprogress=false;
 		} );
 
 	}
@@ -87,22 +95,25 @@ appCommand.controller('ContainerShipControler',
 		self.inprogress=true;
 		self.loading = true;
 		
-		$http.get( '?page=custompage_containership&action=getplatforminformation&paramjson='+json )
-		      .then( function (jsonResult) {
-						// alert("getPlatformInformation: success");
-						 /*self.platforminfo 		= response.data; */ 
-						self.listevents 		= jsonResult.data.listevents;
-						self.listeventshtml		= jsonResult.data.listeventshtml;
-						self.inprogress=false;
-		      		}, 
-		      		function (jsonResult) {
-		      			self.errormessage = "Error from server : "+jsonResult.status;
-		      			self.inprogress=false;
-		      		} 
-		      		).finally(function() {
-		    			self.loading = false;
-		    		});
-		 
+		$http.get( '?page=custompage_containership&action=getplatforminformation&paramjson='+json+"&t="+Date.now() )
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+				// alert("getPlatformInformation: success");
+				 /*self.platforminfo 		= response.data; */ 
+				self.listevents 		= jsonResult.listevents;
+				self.listeventshtml		= jsonResult.listeventshtml;
+				self.inprogress=false;
+    			self.loading = false;
+      		})
+      		.error( function(jsonResult, statusHttp, headers, config) {
+	      			self.errormessage = "Error from server : "+jsonResult.status;
+	      			self.inprogress=false;
+	    			self.loading = false;
+	      		} );
 	};
 	
 	
@@ -119,16 +130,22 @@ appCommand.controller('ContainerShipControler',
 		var json= encodeURI( angular.toJson(param, param));
 
 		
-		$http.get( '?page=custompage_containership&action=getlisttenants&paramjson='+json )
-		.then( function successCallback(response) {
-			self.message="";
-			self.listtenants = response.data.listtenants;
-			self.inprogress=false;
-		}, function errorCallback(response) {
-			self.message="";
-			self.errormessage = "Error from server : "+response.status;
-			self.inprogress=false;
-		} );
+		$http.get( '?page=custompage_containership&action=getlisttenants&paramjson='+json+"&t="+Date.now() )
+	      	.success( function ( jsonResult, statusHttp, headers, config ) {
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+				self.message="";
+				self.listtenants = response.data.listtenants;
+				self.inprogress=false;
+		     })
+      		.error( function(jsonResult, statusHttp, headers, config) {
+				self.message="";
+				self.errormessage = "Error from server : "+response.status;
+				self.inprogress=false;
+      		} );
 	};
 	
 	
@@ -164,17 +181,24 @@ appCommand.controller('ContainerShipControler',
 		
 		var json= encodeURI( angular.toJson(this.tenantinformation, true));
 		
-		$http.get( '?page=custompage_containership&action=addtenant&paramjson='+json  )
-		.then( function (jsonResult) {
-			self.message		= jsonResult.data.message;
-			self.listtenants 	= jsonResult.data.listtenants;
-			self.listeventshtml = jsonResult.data.listeventshtml;
-			self.inprogress=false;
-		}, function (jsonResult) {
-			self.message="";
-			self.errormessage = "Error from server : "+jsonResult.status;
-			self.inprogress=false;
-		} );
+		$http.get( '?page=custompage_containership&action=addtenant&paramjson='+json+"&t="+Date.now()  )
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+			
+				self.message		= jsonResult.message;
+				self.listtenants 	= jsonResult.listtenants;
+				self.listeventshtml = jsonResult.listeventshtml;
+				self.inprogress=false;
+			})
+	      	.error( function(jsonResult, statusHttp, headers, config) {
+				self.message="";
+				self.errormessage = "Error from server : "+jsonResult.status;
+				self.inprogress=false;
+			} );
 	}
 	
 	
@@ -190,17 +214,23 @@ appCommand.controller('ContainerShipControler',
 		
 		var json= encodeURI( angular.toJson(this.tenantinformation, true));
 		
-		$http.get( '?page=custompage_containership&action=edittenant&paramjson='+json  )
-		.then( function (jsonResult) {
-			self.message		= jsonResult.data.message;
-			self.listtenants 	= jsonResult.data.listtenants;
-			self.listeventshtml = jsonResult.data.listeventshtml;
-			self.inprogress=false;
-		}, function (jsonResult) {
-			self.message="";
-			self.errormessage = "Error from server : "+jsonResult.status;
-			self.inprogress=false;
-		} );
+		$http.get( '?page=custompage_containership&action=edittenant&paramjson='+json +"&t="+Date.now() )
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+				self.message		= jsonResult.message;
+				self.listtenants 	= jsonResult.listtenants;
+				self.listeventshtml = jsonResult.listeventshtml;
+				self.inprogress=false;
+			})
+	      	.error( function(jsonResult, statusHttp, headers, config) {		
+				self.message="";
+				self.errormessage = "Error from server : "+jsonResult.status;
+				self.inprogress=false;
+			} );
 	}
 	
 	
@@ -218,16 +248,22 @@ appCommand.controller('ContainerShipControler',
 				  "id" : tenant.id };
 		var json= encodeURI(angular.toJson(param, param));
 		
-		$http.get( '?page=custompage_containership&action=activatetenant&paramjson='+json )
-		.then( function successCallback(jsonResult) {
-			self.message		= jsonResult.data.message;
-			self.listtenants 	= jsonResult.data.listtenants;
-			self.listeventshtml = jsonResult.data.listeventshtml;
-			self.inprogress=false;
-		}, function errorCallback(jsonResult) {
-			self.errormessage = "Error from server : "+jsonResult.status;
-			self.inprogress=false;
-		} );
+		$http.get( '?page=custompage_containership&action=activatetenant&paramjson='+json+"&t="+Date.now() )
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+				self.message		= jsonResult.message;
+				self.listtenants 	= jsonResult.listtenants;
+				self.listeventshtml = jsonResult.listeventshtml;
+				self.inprogress=false;
+			})
+	      	.error( function(jsonResult, statusHttp, headers, config) {
+	      		self.errormessage = "Error from server : "+jsonResult.status;
+	      		self.inprogress=false;
+	      	} );
 	}
 	
 	
@@ -242,18 +278,24 @@ appCommand.controller('ContainerShipControler',
 				  "platformPassword": this.platformPassword,
 				  "id" : tenant.id };
 		var json= encodeURI(angular.toJson(param, param));
-
+		
 	
-		$http.get( '?page=custompage_containership&action=desactivateTenant&paramjson='+json  )
-		.then( function successCallback(jsonResult) {
-			self.message		= jsonResult.data.message;
-			self.listtenants 	= jsonResult.data.listtenants;
-			self.listeventshtml = jsonResult.data.listeventshtml;7
-			self.inprogress=false;
-		}, function errorCallback(jsonResult) {
-			self.errormessage = "Error from server : "+jsonResult.status;
-			self.inprogress=false;
-		} );
+		$http.get( '?page=custompage_containership&action=desactivateTenant&paramjson='+json+"&t="+Date.now() )
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+				self.message		= jsonResult.message;
+				self.listtenants 	= jsonResult.listtenants;
+				self.listeventshtml = jsonResult.listeventshtml;7
+				self.inprogress=false;
+			})
+	      	.error( function(jsonResult, statusHttp, headers, config) {
+				self.errormessage = "Error from server : "+jsonResult.status;
+				self.inprogress=false;
+			} );
 	}
 
 	this.removetenant = function ( tenant ) {
@@ -268,15 +310,21 @@ appCommand.controller('ContainerShipControler',
 				  "id" : tenant.id };
 		var json= encodeURI(angular.toJson(param, param));
 
-		$http.get( '?page=custompage_containership&action=removetenant&paramjson='+json  )
-		.then( function successCallback(jsonResult) {
-			self.message		= jsonResult.data.message;
-			self.listtenants 	= jsonResult.data.listtenants;
-			self.listeventshtml = jsonResult.data.listeventshtml;
-			self.inprogress=false;
-		}, function errorCallback(jsonResult) {
-			self.errormessage = "Error from server : "+jsonResult.status;
-			self.inprogress=false;
+		$http.get( '?page=custompage_containership&action=removetenant&paramjson='+json+"&t="+Date.now()  )
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+				self.message		= jsonResult.message;
+				self.listtenants 	= jsonResult.listtenants;
+				self.listeventshtml = jsonResult.listeventshtml;
+				self.inprogress=false;
+			})
+	      	.error( function(jsonResult, statusHttp, headers, config) {
+				self.errormessage = "Error from server : "+jsonResult.status;
+				self.inprogress=false;
 			
 		} );
 	}
@@ -286,6 +334,9 @@ appCommand.controller('ContainerShipControler',
 	}
 	
 	
+	this.openTenantInAWindow = function( tenant ) {
+		$window.open({"url": "/bonita?tenant="+tenant.id, "incognito": true})
+	}
 	//  manage the modal 
 	
 	this.isshowTenantInformation=false;
