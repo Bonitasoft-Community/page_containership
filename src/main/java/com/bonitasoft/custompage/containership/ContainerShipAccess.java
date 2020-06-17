@@ -412,15 +412,16 @@ public class ContainerShipAccess {
 
             // BonitaHome : only before 7.3
             String bonitaHome = null;
-            if (isBonitaHome(platformAPI))
+            BonitaHomeResult bonitaHomeResult = isBonitaHome(platformAPI);
+            if (bonitaHomeResult.isBonitaHome)
             {
                 bonitaHome = System.getProperty(BonitaHome.BONITA_HOME);
                 if (bonitaHome == null) {
                     bonitaHome = tenantParameters.defaultBonitaHome;
                 }
                 if (bonitaHome == null) {
-                    errorParameters += "Can't access BONITA_HOME;";
-                    tenantResult.listEvents.add( eventNoBonitaHome);
+                    errorParameters += "Can't access BONITA_HOME "+bonitaHomeResult.analyseBonitaHome;
+                    tenantResult.listEvents.add( new BEvent(eventNoBonitaHome, bonitaHomeResult.analyseBonitaHome));
                 }
             }
 
@@ -537,20 +538,16 @@ public class ContainerShipAccess {
 
             // BonitaHome : only before 7.3
             String bonitaHome = null;
-            final String bonitaVersion = platformAPI.getPlatform().getVersion();
-            logger.info("BonitaVersion[" + bonitaVersion + "]");
-            if (bonitaVersion.startsWith("6.") || bonitaVersion.startsWith("7.0")
-                    || bonitaVersion.startsWith("7.1")
-                    || bonitaVersion.startsWith("7.2"))
+            BonitaHomeResult bonitaHomeResult = isBonitaHome(platformAPI);
+            if (bonitaHomeResult.isBonitaHome)
             {
-
                 bonitaHome = System.getProperty(BonitaHome.BONITA_HOME);
                 if (bonitaHome == null) {
                     bonitaHome = tenantParameters.defaultBonitaHome;
                 }
                 if (bonitaHome == null) {
-                    errorParameters += "Can't access BONITA_HOME;";
-                    tenantResult.listEvents.add( eventNoBonitaHome);
+                    errorParameters += "Can't access BONITA_HOME "+bonitaHomeResult.analyseBonitaHome;
+                    tenantResult.listEvents.add( new BEvent(eventNoBonitaHome, bonitaHomeResult.analyseBonitaHome));
                 }
             }
 
@@ -776,14 +773,15 @@ public class ContainerShipAccess {
             String bonitaHome = null;
 
             final PlatformAPI platformAPI = getPlatformAPI(tenantParameters);
-            if (isBonitaHome(platformAPI))
+            BonitaHomeResult bonitaHomeResult = isBonitaHome(platformAPI);
+            if (bonitaHomeResult.isBonitaHome)
             {
                 bonitaHome = System.getProperty(BonitaHome.BONITA_HOME);
             if (bonitaHome == null) {
                 bonitaHome = tenantParameters.defaultBonitaHome;
             }
             if (bonitaHome == null) {
-                tenantResult.listEvents.add( eventNoBonitaHome);
+                tenantResult.listEvents.add( new BEvent(eventNoBonitaHome, bonitaHomeResult.analyseBonitaHome));
                 return tenantResult;
             }
             }
@@ -991,30 +989,45 @@ public class ContainerShipAccess {
 
     }
 
+    private static class BonitaHomeResult {
+        public String analyseBonitaHome="";
+        public boolean isBonitaHome;
+    }
     /**
      * This is a Bonita Home when this is under 7.3
      * @param platformAPI
      * @return
      * @throws PlatformNotFoundException
      */
-    private static boolean isBonitaHome(final PlatformAPI platformAPI) throws PlatformNotFoundException
+    private static BonitaHomeResult isBonitaHome(final PlatformAPI platformAPI) throws PlatformNotFoundException
     {
+        BonitaHomeResult bonitaHomeResult = new BonitaHomeResult();
         final String bonitaVersion = platformAPI.getPlatform().getVersion();
-        logger.info("BonitaVersion[" + bonitaVersion + "]");
+        bonitaHomeResult.analyseBonitaHome += "BonitaVersion[" + bonitaVersion + "], ";
         // get the first number
         StringTokenizer st = new StringTokenizer(bonitaVersion,".");
         try
         {
             int version = st.hasMoreTokens()? Integer.valueOf( st.nextToken()):0;
             int release = st.hasMoreTokens()? Integer.valueOf( st.nextToken()):0;
-            if (version==0)
-                return false;
-            if (version < 7 || (version==7 && release < 3))
-                return true;
-            return false;
+            bonitaHomeResult.analyseBonitaHome+="Version["+version+"] Release["+release+"], ";
+            if (version==0) {
+                bonitaHomeResult.isBonitaHome =false;
+            }
+            else if (version < 7 || (version==7 && release < 3)) {
+                bonitaHomeResult.isBonitaHome =true;
+            }
+            else {
+                bonitaHomeResult.isBonitaHome =false;
+            }
+            bonitaHomeResult.analyseBonitaHome+="IsBonitaHome? "+bonitaHomeResult.isBonitaHome;
+            logger.info(bonitaHomeResult.analyseBonitaHome);
+            return bonitaHomeResult;
         }
         catch(Exception e) {
-            return false;
+            bonitaHomeResult.analyseBonitaHome+="Exception ["+e.getMessage()+"]";
+            bonitaHomeResult.isBonitaHome =false;
+            return bonitaHomeResult;
         }
     }
 }
