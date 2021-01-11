@@ -6,7 +6,7 @@
 (function() {
 
 
-var appCommand = angular.module('containershipmonitor', ['googlechart', 'ui.bootstrap', 'ngSanitize','ngModal']);
+var appCommand = angular.module('containershipmonitor', ['googlechart', 'ui.bootstrap', 'ngSanitize','ngModal','ngCookies']);
 
 
 
@@ -21,7 +21,7 @@ var appCommand = angular.module('containershipmonitor', ['googlechart', 'ui.boot
 
 // Ping the server
 appCommand.controller('ContainerShipControler',
-	function ( $http, $scope,$sce,$window ) {
+	function ( $http, $scope,$sce,$window , $cookies) {
 
 	this.showconnection=true;
 	this.showinformation=false;
@@ -33,6 +33,16 @@ appCommand.controller('ContainerShipControler',
 		this.isshowhistory  = showhistory;
 	};
 	
+	this.getHttpConfig = function () {
+		var additionalHeaders = {};
+		var csrfToken = $cookies['X-Bonita-API-Token'];
+		if (csrfToken) {
+			additionalHeaders ['X-Bonita-API-Token'] = csrfToken;
+		}
+		var config= {"headers": additionalHeaders};
+		console.log("GetHttpConfig : "+angular.toJson( config));
+		return config;
+	}
 	this.message="";
 	this.platformUsername="platformAdmin";
 	this.platformPassword = "platform";
@@ -60,7 +70,7 @@ appCommand.controller('ContainerShipControler',
 					  
 		var json= encodeURI(angular.toJson(param, param));
 		
-		$http.get( '?page=custompage_containership&action=connection&paramjson='+json+"&t="+Date.now()  )
+		$http.get( '?page=custompage_containership&action=connection&paramjson='+json+"&t="+Date.now(), this.getHttpConfig() )
 			.success( function ( jsonResult, statusHttp, headers, config ) {
 				// connection is lost ?
 				if (statusHttp==401 || typeof jsonResult === 'string') {
@@ -95,7 +105,7 @@ appCommand.controller('ContainerShipControler',
 		self.inprogress=true;
 		self.loading = true;
 		
-		$http.get( '?page=custompage_containership&action=getplatforminformation&paramjson='+json+"&t="+Date.now() )
+		$http.get( '?page=custompage_containership&action=getplatforminformation&paramjson='+json+"&t="+Date.now() , this.getHttpConfig() )
 			.success( function ( jsonResult, statusHttp, headers, config ) {
 				// connection is lost ?
 				if (statusHttp==401 || typeof jsonResult === 'string') {
@@ -130,7 +140,7 @@ appCommand.controller('ContainerShipControler',
 		var json= encodeURI( angular.toJson(param, param));
 
 		
-		$http.get( '?page=custompage_containership&action=getlisttenants&paramjson='+json+"&t="+Date.now() )
+		$http.get( '?page=custompage_containership&action=getlisttenants&paramjson='+json+"&t="+Date.now() , this.getHttpConfig())
 	      	.success( function ( jsonResult, statusHttp, headers, config ) {
 				// connection is lost ?
 				if (statusHttp==401 || typeof jsonResult === 'string') {
@@ -181,7 +191,7 @@ appCommand.controller('ContainerShipControler',
 		
 		var json= encodeURI( angular.toJson(this.tenantinformation, true));
 		
-		$http.get( '?page=custompage_containership&action=addtenant&paramjson='+json+"&t="+Date.now()  )
+		$http.get( '?page=custompage_containership&action=addtenant&paramjson='+json+"&t="+Date.now() , this.getHttpConfig() )
 			.success( function ( jsonResult, statusHttp, headers, config ) {
 				// connection is lost ?
 				if (statusHttp==401 || typeof jsonResult === 'string') {
@@ -214,7 +224,7 @@ appCommand.controller('ContainerShipControler',
 		
 		var json= encodeURI( angular.toJson(this.tenantinformation, true));
 		
-		$http.get( '?page=custompage_containership&action=edittenant&paramjson='+json +"&t="+Date.now() )
+		$http.get( '?page=custompage_containership&action=edittenant&paramjson='+json +"&t="+Date.now(), this.getHttpConfig() )
 			.success( function ( jsonResult, statusHttp, headers, config ) {
 				// connection is lost ?
 				if (statusHttp==401 || typeof jsonResult === 'string') {
@@ -248,7 +258,7 @@ appCommand.controller('ContainerShipControler',
 				  "id" : tenant.id };
 		var json= encodeURI(angular.toJson(param, param));
 		
-		$http.get( '?page=custompage_containership&action=activatetenant&paramjson='+json+"&t="+Date.now() )
+		$http.get( '?page=custompage_containership&action=activatetenant&paramjson='+json+"&t="+Date.now(), this.getHttpConfig() )
 			.success( function ( jsonResult, statusHttp, headers, config ) {
 				// connection is lost ?
 				if (statusHttp==401 || typeof jsonResult === 'string') {
@@ -280,7 +290,7 @@ appCommand.controller('ContainerShipControler',
 		var json= encodeURI(angular.toJson(param, param));
 		
 	
-		$http.get( '?page=custompage_containership&action=desactivateTenant&paramjson='+json+"&t="+Date.now() )
+		$http.get( '?page=custompage_containership&action=desactivateTenant&paramjson='+json+"&t="+Date.now(), this.this.getHttpConfig() ) 
 			.success( function ( jsonResult, statusHttp, headers, config ) {
 				// connection is lost ?
 				if (statusHttp==401 || typeof jsonResult === 'string') {
@@ -310,7 +320,7 @@ appCommand.controller('ContainerShipControler',
 				  "id" : tenant.id };
 		var json= encodeURI(angular.toJson(param, param));
 
-		$http.get( '?page=custompage_containership&action=removetenant&paramjson='+json+"&t="+Date.now()  )
+		$http.get( '?page=custompage_containership&action=removetenant&paramjson='+json+"&t="+Date.now() , this.getHttpConfig() )
 			.success( function ( jsonResult, statusHttp, headers, config ) {
 				// connection is lost ?
 				if (statusHttp==401 || typeof jsonResult === 'string') {
